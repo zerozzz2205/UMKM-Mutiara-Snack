@@ -1,13 +1,832 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinUMKM - Solusi Keuangan UMKM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#008080', // Teal
+                        'primary-dark': '#006666',
+                        secondary: '#f1f5f9',
+                        sidebar: '#020617', // Deep Midnight
+                        success: '#10b981',
+                        danger: '#e11d48',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [v-cloak] { display: none; }
+        .page-content { display: none; }
+        .active-page { display: block; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .glass { background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-[#0f172a] font-sans antialiased">
+
+    <!-- Layout Wrapper -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-sidebar text-white flex-shrink-0 flex flex-col transition-all duration-300 z-50">
+            <div class="h-16 flex items-center px-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+                        <i data-lucide="store" class="h-5 w-5"></i>
+                    </div>
+                    <div class="flex flex-col gap-0.5 leading-none sidebar-label">
+                        <span class="font-bold text-lg tracking-tight">FinUMKM</span>
+                        <span class="text-[10px] text-white/40 uppercase tracking-widest font-semibold">Enterprise</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+                <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2 sidebar-label">Menu Utama</p>
+                <a href="#" onclick="showPage('dashboard')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all bg-white/10 text-white font-semibold" data-page="dashboard">
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Dashboard</span>
+                </a>
+                <a href="#" onclick="showPage('buku-kas')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="buku-kas">
+                    <i data-lucide="book-open" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Buku Kas Utama</span>
+                </a>
+                <a href="#" onclick="showPage('analisis')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="analisis">
+                    <i data-lucide="trending-up" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Analisis Margin</span>
+                </a>
+                <a href="#" onclick="showPage('stok')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="stok">
+                    <i data-lucide="package" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Manajemen Stok</span>
+                </a>
+                <a href="#" onclick="showPage('laporan')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="laporan">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Laporan Export</span>
+                </a>
+                <a href="#" onclick="showPage('pengaturan')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="pengaturan">
+                    <i data-lucide="settings" class="h-5 w-5"></i>
+                    <span class="sidebar-label">Pengaturan</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-white/10 sidebar-label">
+                <div class="flex items-center gap-3 px-2">
+                    <div class="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">K</div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium">Kadek - Owner</span>
+                        <span class="text-[10px] text-white/40">Admin Utama</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            
+            <!-- Top Header -->
+            <header class="h-16 flex items-center justify-between px-8 border-b bg-white/80 backdrop-blur-md sticky top-0 z-40">
+                <div class="flex items-center gap-6">
+                    <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                        <i data-lucide="menu" class="h-5 w-5"></i>
+                    </button>
+                    <div class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-500">
+                        <span>FinUMKM</span>
+                        <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                        <span id="page-breadcrumb" class="text-slate-900 font-bold tracking-tight">Dashboard Overview</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden lg:block">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+                        <input type="text" placeholder="Cari transaksi..." class="bg-slate-100 border-none h-10 w-64 rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20">
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider">
+                        <i data-lucide="wifi" class="h-3 w-3"></i>
+                        Online
+                    </div>
+                    <button class="relative p-2 text-slate-500 hover:text-primary">
+                        <i data-lucide="bell" class="h-5 w-5"></i>
+                        <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-danger border-2 border-white"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Sections -->
+            <main class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
+                
+                <!-- Page: Dashboard -->
+                <div id="page-dashboard" class="page-content active-page space-y-8 max-w-7xl mx-auto">
+                    <div class="flex flex-col gap-1">
+                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Ringkasan Keuangan</h1>
+                        <p class="text-slate-500">Selamat datang kembali, Kadek. Berikut performa toko Anda bulan ini.</p>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <div class="absolute top-0 left-0 h-full w-1.5 bg-success"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Omzet Bersih</p>
+                                <i data-lucide="trending-up" class="h-4 w-4 text-success"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">Rp45.250.000</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded-md">+12.5%</span>
+                                <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">vs bulan lalu</span>
+                            </div>
+                        </div>
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <div class="absolute top-0 left-0 h-full w-1.5 bg-danger"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Operational Cost</p>
+                                <i data-lucide="trending-down" class="h-4 w-4 text-danger"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">Rp28.400.000</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="text-[10px] font-bold bg-danger/10 text-danger px-1.5 py-0.5 rounded-md">+4.2%</span>
+                                <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">vs bulan lalu</span>
+                            </div>
+                        </div>
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <div class="absolute top-0 left-0 h-full w-1.5 bg-info"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Net Profit Margin</p>
+                                <i data-lucide="dollar-sign" class="h-4 w-4 text-info"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-slate-900">37.2%</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="text-[10px] font-bold bg-info/10 text-info px-1.5 py-0.5 rounded-md">+2.1%</span>
+                                <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">vs bulan lalu</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        <div class="bg-slate-100 border border-dashed border-slate-300 rounded-2xl p-6">
+                            <div class="flex items-center gap-2 mb-2 text-slate-400">
+                                <i data-lucide="wallet" class="h-4 w-4"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Cash on Hand</span>
+                            </div>
+                            <p class="text-xl font-bold tracking-tight">Rp8.450.000</p>
+                        </div>
+                        <div class="bg-slate-100 border border-dashed border-slate-300 rounded-2xl p-6">
+                            <div class="flex items-center gap-2 mb-2 text-slate-400">
+                                <i data-lucide="building-2" class="h-4 w-4"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Bank Balance</span>
+                            </div>
+                            <p class="text-xl font-bold tracking-tight">Rp125.800.000</p>
+                        </div>
+                        <div class="bg-danger/5 border border-dashed border-danger/20 rounded-2xl p-6">
+                            <div class="flex items-center gap-2 mb-2 text-danger">
+                                <i data-lucide="alert-circle" class="h-4 w-4"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Piutang Pelanggan</span>
+                            </div>
+                            <p class="text-xl font-bold tracking-tight text-danger">Rp3.200.000</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-8">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">Cashflow Forecast</h2>
+                                <p class="text-xs text-slate-400">Perbandingan Pemasukan vs Pengeluaran (Bulan Terakhir)</p>
+                            </div>
+                            <div class="flex h-10 p-1 bg-slate-100 rounded-xl gap-1">
+                                <button class="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-bold uppercase tracking-wider text-primary">Harian</button>
+                                <button class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-400">Bulanan</button>
+                            </div>
+                        </div>
+                        <canvas id="cashflowChart" height="100"></canvas>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+                            <h2 class="text-lg font-bold text-slate-900 mb-6">Produk Margin Tertinggi</h2>
+                            <div class="space-y-6">
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="font-semibold text-slate-900">Kopi Susu Gula Aren</span>
+                                        <span class="font-bold text-primary">65% Margin</span>
+                                    </div>
+                                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="font-semibold text-slate-900">Es Teh Kampul</span>
+                                        <span class="font-bold text-primary">80% Margin</span>
+                                    </div>
+                                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary" style="width: 80%"></div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="font-semibold text-slate-900">Croissant Almond</span>
+                                        <span class="font-bold text-primary">45% Margin</span>
+                                    </div>
+                                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-primary rounded-3xl p-8 text-white shadow-lg shadow-primary/20">
+                            <h2 class="text-lg font-bold mb-1">Insight AI FinUMKM</h2>
+                            <p class="text-xs text-white/70 mb-6 uppercase tracking-widest font-bold">Analisis Hari Ini</p>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex gap-4">
+                                    <i data-lucide="trending-up" class="h-8 w-8 text-white/50"></i>
+                                    <div class="space-y-1">
+                                        <p class="text-sm font-bold leading-none">Potensi Profit Naik!</p>
+                                        <p class="text-xs text-white/80 leading-relaxed">"Es Teh Kampul" sedang tren. Tambah stok bahan baku 15% lebih banyak untuk persiapan weekend.</p>
+                                    </div>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex gap-4">
+                                    <i data-lucide="alert-circle" class="h-8 w-8 text-white/50"></i>
+                                    <div class="space-y-1">
+                                        <p class="text-sm font-bold leading-none">Cek Supplier!</p>
+                                        <p class="text-xs text-white/80 leading-relaxed">Harga Susu UHT naik 8% di pasar lokal. AI merekomendasikan supplier 'Sumber Rejeki' untuk harga lebih hemat.</p>
+                                    </div>
+                                </div>
+                                <button class="w-full h-12 bg-white text-primary font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-colors">Lihat Laporan Detail</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page: Buku Kas -->
+                <div id="page-buku-kas" class="page-content space-y-8 max-w-7xl mx-auto">
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col gap-1">
+                            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Buku Kas Utama</h1>
+                            <p class="text-slate-500">Catat dan pantau arus kas masuk/keluar UMKM Anda.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="h-10 px-4 flex items-center gap-2 border border-slate-200 bg-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50">
+                                <i data-lucide="filter" class="h-4 w-4"></i> Filter
+                            </button>
+                            <button class="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-dark shadow-lg shadow-primary/20">
+                                <i data-lucide="plus" class="h-4 w-4"></i> Entri Baru
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-8 items-start">
+                        <!-- Table -->
+                        <div class="col-span-12 lg:col-span-8 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="p-6 border-b border-slate-100">
+                                <div class="relative">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+                                    <input type="text" placeholder="Cari deskripsi, kategori..." class="w-full pl-10 bg-slate-50 border-none h-11 rounded-xl text-sm italic">
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-100">
+                                        <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                            <th class="px-6 py-4">Tanggal</th>
+                                            <th class="px-6 py-4">Deskripsi</th>
+                                            <th class="px-6 py-4">Kategori</th>
+                                            <th class="px-6 py-4 text-right">Nominal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">13 Apr 2024</td>
+                                            <td class="px-6 py-5">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-bold text-slate-900">Penjualan Kopi Susu (15 Cup)</span>
+                                                    <span class="text-[10px] text-slate-400">Tunai</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-5">
+                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Penjualan</span>
+                                            </td>
+                                            <td class="px-6 py-5 text-right font-bold text-success">+ Rp375.000</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">12 Apr 2024</td>
+                                            <td class="px-6 py-5">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-bold text-slate-900">Beli Susu UHT 1 Karton</span>
+                                                    <span class="text-[10px] text-slate-400">Transfer</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-5">
+                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Bahan Baku</span>
+                                            </td>
+                                            <td class="px-6 py-5 text-right font-bold text-danger">- Rp210.000</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">12 Apr 2024</td>
+                                            <td class="px-6 py-5">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-bold text-slate-900">Bayar Listrik Toko</span>
+                                                    <span class="text-[10px] text-slate-400">Transfer</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-5">
+                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Operasional</span>
+                                            </td>
+                                            <td class="px-6 py-5 text-right font-bold text-danger">- Rp450.000</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Form -->
+                        <div class="col-span-12 lg:col-span-4 space-y-6">
+                            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+                                <h2 class="text-lg font-bold text-slate-900 mb-2">Input Cepat</h2>
+                                <p class="text-xs text-slate-400 mb-8 font-medium">Gunakan formulir ini untuk entri kilat.</p>
+                                
+                                <div class="flex h-11 p-1 bg-slate-100 rounded-xl gap-1 mb-8">
+                                    <button class="flex-1 bg-white shadow-sm rounded-lg text-xs font-bold uppercase tracking-wider text-success">Pemasukan</button>
+                                    <button class="flex-1 text-xs font-bold uppercase tracking-wider text-slate-400">Pengeluaran</button>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deskripsi Transaksi</label>
+                                        <input type="text" placeholder="Contoh: Jual Kopi Susu" class="w-full px-4 h-11 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nominal (Rp)</label>
+                                        <input type="number" placeholder="0" class="w-full px-4 h-11 bg-slate-50 border-none rounded-xl text-lg font-bold text-primary placeholder:text-slate-300">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
+                                            <div class="w-full px-4 h-11 bg-slate-50 rounded-xl flex items-center justify-between text-[10px] font-bold uppercase tracking-widest cursor-pointer text-slate-400">
+                                                Pilih
+                                                <i data-lucide="chevron-down" class="h-3 w-3"></i>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Metode</label>
+                                            <div class="w-full px-4 h-11 bg-slate-50 rounded-xl flex items-center justify-between text-[10px] font-bold uppercase tracking-widest cursor-pointer text-slate-400">
+                                                Tunai
+                                                <i data-lucide="chevron-down" class="h-3 w-3"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lampiran / Struk</label>
+                                        <div class="w-full h-24 border-2 border-dashed border-slate-100 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">
+                                            <i data-lucide="image" class="h-6 w-6 text-slate-300"></i>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300">Klik & Upload</span>
+                                        </div>
+                                    </div>
+                                    <button class="w-full h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20">Simpan Transaksi</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-warning/10 rounded-2xl p-6 border border-warning/20 flex gap-4">
+                                <i data-lucide="alert-triangle" class="h-6 w-6 text-warning shrink-0"></i>
+                                <div class="space-y-1">
+                                    <p class="text-xs font-bold text-slate-900 leading-tight">Anomali Terdeteksi!</p>
+                                    <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Ada entri ganda untuk 'Listrik Toko' sebesar Rp450.000. Mohon verifikasi kembali.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page: Analisis -->
+                <div id="page-analisis" class="page-content space-y-8 max-w-7xl mx-auto">
+                    <div class="flex flex-col gap-1">
+                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Analisis Laba/Rugi</h1>
+                        <p class="text-slate-500">Pahami efisiensi biaya dan kontribusi margin produk Anda.</p>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-12">
+                        <div class="col-span-12 lg:col-span-8 bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+                            <div class="flex justify-between items-center mb-8">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Break-even Point (BEP)</h2>
+                                    <p class="text-xs text-slate-400 font-medium">Titik impas operasional bulan ini</p>
+                                </div>
+                                <span class="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Target Tercapai</span>
+                            </div>
+
+                            <div class="relative h-20 bg-slate-50 rounded-2xl mb-8 flex items-center px-8 overflow-hidden">
+                                <div class="absolute inset-y-0 left-0 bg-success/20 w-full"></div>
+                                <div class="absolute inset-y-0 left-0 bg-primary/20 w-[54%] border-r-2 border-primary/30"></div>
+                                
+                                <div class="relative w-full flex justify-between items-center z-10">
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Fixed Cost</span>
+                                        <span class="text-sm font-bold">11.7 Juta</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-primary">BEP (Target)</span>
+                                        <span class="text-sm font-bold text-primary">24.5 Juta</span>
+                                    </div>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Realita Sales</span>
+                                        <span class="text-sm font-bold text-success">45.2 Juta</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-6">
+                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Margin Kontribusi</p>
+                                    <p class="text-xl font-bold tracking-tight">48.5%</p>
+                                </div>
+                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Unit BEP</p>
+                                    <p class="text-xl font-bold tracking-tight">842 Cup</p>
+                                </div>
+                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Safety Margin</p>
+                                    <p class="text-xl font-bold tracking-tight text-success">45.8%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-12 lg:col-span-4 bg-white rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col">
+                            <h2 class="text-lg font-bold text-slate-900 mb-2">Struktur Biaya</h2>
+                            <p class="text-xs text-slate-400 mb-6 font-medium">Komposisi pengeluaran operasional</p>
+                            <canvas id="costBreakdownChart" class="mb-6"></canvas>
+                            <div class="space-y-4 mt-auto">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-2 w-2 rounded-full bg-primary"></div>
+                                        <span class="text-slate-400 font-medium tracking-tight">Bahan Baku (COGS)</span>
+                                    </div>
+                                    <span class="font-bold">54.2%</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-2 w-2 rounded-full bg-info"></div>
+                                        <span class="text-slate-400 font-medium tracking-tight">Gaji Karyawan</span>
+                                    </div>
+                                    <span class="font-bold">29.9%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page: Stok -->
+                <div id="page-stok" class="page-content space-y-8 max-w-7xl mx-auto">
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col gap-1">
+                            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Manajemen Stok</h1>
+                            <p class="text-slate-500">Pantau inventaris bahan baku untuk menghindari kekosongan stok.</p>
+                        </div>
+                        <button class="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-dark">
+                            <i data-lucide="plus" class="h-4 w-4"></i> Tambah Item
+                        </button>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Total SKU Aktif</p>
+                            <p class="text-2xl font-bold">124 Item</p>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-danger mb-2">Peringatan Stok Menipis</p>
+                            <p class="text-2xl font-bold text-danger">8 Item</p>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Estimasi Nilai Stok</p>
+                            <p class="text-2xl font-bold text-info">Rp18.450.000</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b border-slate-100">
+                                <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                    <th class="px-6 py-4">Nama Barang</th>
+                                    <th class="px-6 py-4">SKU</th>
+                                    <th class="px-6 py-4">Kategori</th>
+                                    <th class="px-6 py-4 text-center">Stok</th>
+                                    <th class="px-6 py-4 text-right">Harga Satuan</th>
+                                    <th class="px-6 py-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                                <i data-lucide="package" class="h-4 w-4"></i>
+                                            </div>
+                                            <span class="text-sm font-bold text-slate-900 uppercase">Biji Kopi Arabica (1kg)</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-xs font-mono text-slate-400">KOP-001</td>
+                                    <td class="px-6 py-5">
+                                        <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Bahan Baku</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-center px-6">
+                                        <span class="text-sm font-bold">12 Unit</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-right font-bold">Rp185.000</td>
+                                    <td class="px-6 py-5 text-right">
+                                        <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="bg-danger/5">
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-8 w-8 rounded-lg bg-danger/10 flex items-center justify-center text-danger">
+                                                <i data-lucide="package" class="h-4 w-4"></i>
+                                            </div>
+                                            <span class="text-sm font-bold text-slate-900 uppercase">Susu UHT Full Cream</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-xs font-mono text-slate-400">SUS-002</td>
+                                    <td class="px-6 py-5">
+                                        <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Bahan Baku</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-sm font-bold text-danger">3 Kotak</span>
+                                            <span class="text-[8px] font-bold uppercase tracking-tighter text-danger">Segera Restock</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-right font-bold">Rp18.500</td>
+                                    <td class="px-6 py-5 text-right text-slate-400 font-medium"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Page: Laporan -->
+                <div id="page-laporan" class="page-content space-y-8 max-w-7xl mx-auto">
+                    <div class="flex flex-col gap-1">
+                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Laporan Export</h1>
+                        <p class="text-slate-500">Unduh data keuangan Anda dalam berbagai format profesional.</p>
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all duration-300">
+                            <div class="flex justify-between items-start mb-12">
+                                <div class="h-14 w-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                                    <i data-lucide="file-text" class="h-7 w-7"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">PDF</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">Excel</span>
+                                </div>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Laba Rugi</h2>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Ringkasan pendapatan bruto, COGS, dan laba bersih Anda.</p>
+                            <button class="w-full h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2">
+                                <i data-lucide="download" class="h-4 w-4"></i> Download Laporan
+                            </button>
+                        </div>
+                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all duration-300">
+                            <div class="flex justify-between items-start mb-12">
+                                <div class="h-14 w-14 bg-info text-white rounded-2xl flex items-center justify-center shadow-lg shadow-info/20">
+                                    <i data-lucide="bar-chart-3" class="h-7 w-7"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">CSV</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">PDF</span>
+                                </div>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Arus Kas</h2>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Semua transaksi mutasi kas disusun secara kronologis.</p>
+                            <button class="w-full h-12 bg-info text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-info/10">
+                                <i data-lucide="download" class="h-4 w-4"></i> Download CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page: Pengaturan -->
+                <div id="page-pengaturan" class="page-content space-y-8 max-w-7xl mx-auto">
+                    <h1 class="text-3xl font-bold tracking-tight text-slate-900">Pengaturan</h1>
+                    
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="flex border-b border-slate-100 overflow-x-auto">
+                            <button class="px-8 py-5 text-xs font-bold uppercase tracking-widest border-b-2 border-primary text-primary">Profil Toko</button>
+                            <button class="px-8 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 hover:bg-slate-50">Akun</button>
+                            <button class="px-8 py-5 text-xs font-bold uppercase tracking-widest text-slate-400 hover:bg-slate-50">Koneksi API</button>
+                        </div>
+                        <div class="p-8 space-y-8">
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nama Bisnis (UMKM)</label>
+                                    <input type="text" value="Kopi Kadek & Eatery" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori Bisnis</label>
+                                    <input type="text" value="Food & Beverage" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email Bisnis</label>
+                                    <input type="email" value="hello@kopikadek.id" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">WhatsApp Aktif</label>
+                                    <input type="text" value="+62 812-7489-0012" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold">
+                                </div>
+                            </div>
+                            <div class="pt-8 border-t border-slate-100 flex justify-end">
+                                <button class="h-12 px-8 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-primary-dark">Simpan Perubahan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Floating Action Button -->
+            <div class="fixed bottom-8 right-8 flex flex-col-reverse items-end group">
+                <button id="fab-trigger" class="h-14 w-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-primary/30">
+                    <i data-lucide="plus" id="fab-icon" class="h-6 w-6 transition-transform"></i>
+                </button>
+                <div id="fab-menu" class="hidden flex flex-col gap-2 mb-4 animate-in fade-in slide-in-from-bottom-5">
+                    <button class="h-11 px-6 bg-success text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
+                        <i data-lucide="arrow-up-right" class="h-4 w-4"></i> Tambah Pemasukan
+                    </button>
+                    <button class="h-11 px-6 bg-danger text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
+                        <i data-lucide="arrow-down-left" class="h-4 w-4"></i> Tambah Pengeluaran
+                    </button>
+                </div>
+            </div>
+
+            <footer class="h-12 flex items-center justify-between px-8 bg-white border-t text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                <span>FinUMKM v1.0.0</span>
+                <span>Terakhir diperbarui: 2 menit yang lalu oleh Kadek</span>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Responsive Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const labels = document.querySelectorAll('.sidebar-label');
+            if (sidebar.classList.contains('w-64')) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                labels.forEach(l => l.classList.add('hidden'));
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                labels.forEach(l => l.classList.remove('hidden'));
+            }
+        }
+
+        // SPA Navigation Helper
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active-page');
+            });
+            // Show requested page
+            document.getElementById('page-' + pageId).classList.add('active-page');
+            
+            // Update Breadcrumb
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                'buku-kas': 'Buku Kas Utama',
+                analisis: 'Analisis Kedalaman Margin',
+                stok: 'Manajemen Stok & Inventaris',
+                laporan: 'Laporan Dashboard Export',
+                pengaturan: 'Pengaturan Global'
+            };
+            document.getElementById('page-breadcrumb').innerText = titles[pageId];
+
+            // Update Nav Item UI
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('bg-white/10', 'text-white', 'font-semibold');
+                nav.classList.add('text-white/70');
+                if (nav.getAttribute('data-page') === pageId) {
+                    nav.classList.add('bg-white/10', 'text-white', 'font-semibold');
+                    nav.classList.remove('text-white/70');
+                }
+            });
+
+            // If mobile, close sidebar (optional)
+            if (window.innerWidth < 768) {
+                // logic to toggle sidebar
+            }
+        }
+
+        // Floating Action Button logic
+        const fabTrigger = document.getElementById('fab-trigger');
+        const fabMenu = document.getElementById('fab-menu');
+        const fabIcon = document.getElementById('fab-icon');
+        let fabOpen = false;
+
+        fabTrigger.addEventListener('click', () => {
+            fabOpen = !fabOpen;
+            if (fabOpen) {
+                fabMenu.classList.remove('hidden');
+                fabIcon.style.transform = 'rotate(45deg)';
+            } else {
+                fabMenu.classList.add('hidden');
+                fabIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // Initialize Charts
+        window.addEventListener('DOMContentLoaded', () => {
+            // Dashboard Chart
+            const ctx1 = document.getElementById('cashflowChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['1 Apr', '5 Apr', '10 Apr', '15 Apr', '20 Apr', '25 Apr', '30 Apr'],
+                    datasets: [
+                        {
+                            label: 'Pemasukan',
+                            data: [4.5, 5.2, 4.8, 6.1, 5.5, 6.8, 7.2],
+                            borderColor: '#008080',
+                            backgroundColor: 'rgba(0, 128, 128, 0.05)',
+                            tension: 0.4,
+                            fill: true,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: [3.2, 3.1, 3.5, 3.8, 3.4, 4.1, 4.3],
+                            borderColor: '#e11d48',
+                            backgroundColor: 'rgba(225, 29, 72, 0.05)',
+                            tension: 0.4,
+                            fill: true,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f1f5f9' },
+                            ticks: { callback: (v) => 'Rp' + v + 'jt', font: { weight: 600 } } 
+                        },
+                        x: { grid: { display: false }, ticks: { font: { weight: 600 } } }
+                    }
+                }
+            });
+
+            // Analisis Cost Pie Chart
+            const ctx2 = document.getElementById('costBreakdownChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bahan Baku', 'Gaji', 'Sewa', 'Marketing'],
+                    datasets: [{
+                        data: [54, 30, 12, 4],
+                        backgroundColor: ['#008080', '#3b82f6', '#f59e0b', '#e11d48'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
