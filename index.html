@@ -178,37 +178,37 @@
                     </div>
 
                     <div class="grid gap-6 md:grid-cols-4">
-                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-lg hover:shadow-success/10 hover:-translate-y-0.5 cursor-default">
                             <div class="absolute top-0 left-0 h-full w-1.5 bg-success"></div>
                             <div class="flex justify-between items-start mb-4">
                                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Omzet Bersih</p>
                                 <i data-lucide="trending-up" class="h-4 w-4 text-success"></i>
                             </div>
-                            <p id="stat-omzet" class="text-2xl font-bold text-slate-900">Rp45.250.000</p>
+                            <p id="stat-omzet" class="text-2xl font-bold text-slate-900">Rp0</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded-md">+12.5%</span>
-                                <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">vs bulan lalu</span>
+                                <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded-md">New</span>
+                                <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Menunggu Transaksi</span>
                             </div>
                         </div>
-                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-lg hover:shadow-danger/10 hover:-translate-y-0.5 cursor-default">
                             <div class="absolute top-0 left-0 h-full w-1.5 bg-danger"></div>
                             <div class="flex justify-between items-start mb-4">
                                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Biaya</p>
                                 <i data-lucide="trending-down" class="h-4 w-4 text-danger"></i>
                             </div>
-                            <p id="stat-biaya" class="text-2xl font-bold text-slate-900">Rp28.400.000</p>
+                            <p id="stat-biaya" class="text-2xl font-bold text-slate-900">Rp0</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="text-[10px] font-bold bg-danger/10 text-danger px-1.5 py-0.5 rounded-md">+4.2%</span>
+                                <span class="text-[10px] font-bold bg-danger/10 text-danger px-1.5 py-0.5 rounded-md">0%</span>
                                 <span class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">vs bulan lalu</span>
                             </div>
                         </div>
-                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-lg hover:shadow-info/10 hover:-translate-y-0.5 cursor-default">
                             <div class="absolute top-0 left-0 h-full w-1.5 bg-info"></div>
                             <div class="flex justify-between items-start mb-4">
                                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Net Margin</p>
                                 <i data-lucide="dollar-sign" class="h-4 w-4 text-info"></i>
                             </div>
-                            <p id="stat-margin" class="text-2xl font-bold text-slate-900">37.2%</p>
+                            <p id="stat-margin" class="text-2xl font-bold text-slate-900">0%</p>
                         </div>
                         <div class="relative overflow-hidden bg-orange-500 rounded-2xl p-6 shadow-lg shadow-orange-500/20 text-white">
                             <div class="flex justify-between items-start mb-4">
@@ -325,9 +325,22 @@
                             <p class="text-slate-500">Catat dan pantau arus kas masuk/keluar UMKM Anda.</p>
                         </div>
                         <div class="flex gap-2">
-                            <button class="h-10 px-4 flex items-center gap-2 border border-slate-200 bg-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50">
-                                <i data-lucide="filter" class="h-4 w-4"></i> Filter
-                            </button>
+                            <div class="flex items-center bg-white border border-slate-200 rounded-xl px-3 gap-2">
+                                <i data-lucide="calendar" class="h-3.5 w-3.5 text-slate-400"></i>
+                                <input type="date" id="filter-date-start" onchange="renderCashBook()" class="h-10 text-[10px] font-bold border-none focus:ring-0 bg-transparent">
+                                <span class="text-slate-300">-</span>
+                                <input type="date" id="filter-date-end" onchange="renderCashBook()" class="h-10 text-[10px] font-bold border-none focus:ring-0 bg-transparent">
+                            </div>
+                            <div class="flex items-center bg-white border border-slate-200 rounded-xl px-3 gap-2">
+                                <i data-lucide="filter" class="h-3.5 w-3.5 text-slate-400"></i>
+                                <select id="filter-category" onchange="renderCashBook()" class="h-10 text-xs font-bold uppercase tracking-wider bg-transparent border-none focus:ring-0">
+                                    <option value="all">Semua Kategori</option>
+                                    <option value="Penjualan">Penjualan</option>
+                                    <option value="Bahan Baku">Bahan Baku</option>
+                                    <option value="Operasional">Operasional</option>
+                                    <option value="Gaji">Gaji</option>
+                                </select>
+                            </div>
                             <button onclick="openTransactionModal('income')" class="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-dark shadow-lg shadow-primary/20">
                                 <i data-lucide="plus" class="h-4 w-4"></i> Entri Baru
                             </button>
@@ -353,46 +366,8 @@
                                             <th class="px-6 py-4 text-right">Nominal</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-50">
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">13 Apr 2024</td>
-                                            <td class="px-6 py-5">
-                                                <div class="flex flex-col">
-                                                    <span class="text-sm font-bold text-slate-900">Penjualan Kopi Susu (15 Cup)</span>
-                                                    <span class="text-[10px] text-slate-400">Tunai</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-5">
-                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Penjualan</span>
-                                            </td>
-                                            <td class="px-6 py-5 text-right font-bold text-success">+ Rp375.000</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">12 Apr 2024</td>
-                                            <td class="px-6 py-5">
-                                                <div class="flex flex-col">
-                                                    <span class="text-sm font-bold text-slate-900">Beli Susu UHT 1 Karton</span>
-                                                    <span class="text-[10px] text-slate-400">Transfer</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-5">
-                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Bahan Baku</span>
-                                            </td>
-                                            <td class="px-6 py-5 text-right font-bold text-danger">- Rp210.000</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-6 py-5 text-xs text-slate-400 font-medium">12 Apr 2024</td>
-                                            <td class="px-6 py-5">
-                                                <div class="flex flex-col">
-                                                    <span class="text-sm font-bold text-slate-900">Bayar Listrik Toko</span>
-                                                    <span class="text-[10px] text-slate-400">Transfer</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-5">
-                                                <span class="text-[9px] font-bold uppercase py-1 px-2.5 bg-slate-100 rounded-md">Operasional</span>
-                                            </td>
-                                            <td class="px-6 py-5 text-right font-bold text-danger">- Rp450.000</td>
-                                        </tr>
+                                    <tbody id="cash-table-body" class="divide-y divide-slate-50">
+                                        <!-- Transaksi akan dirender secara dinamis oleh JavaScript -->
                                     </tbody>
                                 </table>
                             </div>
@@ -410,6 +385,15 @@
                                 </div>
 
                                 <div class="space-y-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
+                                        <select id="sidebar-tx-category" class="w-full px-4 h-11 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20">
+                                            <option value="Penjualan">Penjualan</option>
+                                            <option value="Bahan Baku">Bahan Baku</option>
+                                            <option value="Operasional">Operasional</option>
+                                            <option value="Gaji">Gaji</option>
+                                        </select>
+                                    </div>
                                     <div class="space-y-2">
                                         <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deskripsi Transaksi</label>
                                         <input type="text" id="sidebar-tx-desc" placeholder="Contoh: Jual Kopi Susu" class="w-full px-4 h-11 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20">
@@ -945,8 +929,25 @@
                     </div>
                     
                     <div class="space-y-4">
+                        <input type="hidden" id="tx-type-hidden">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deskripsi / Kategori</label>
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
+                            <select id="tx-category" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                                <optgroup label="Pemasukan" id="opt-income">
+                                    <option value="Penjualan">Penjualan Produk</option>
+                                    <option value="Lain-lain">Pendapatan Lain</option>
+                                </optgroup>
+                                <optgroup label="Pengeluaran" id="opt-expense">
+                                    <option value="Bahan Baku">Bahan Baku</option>
+                                    <option value="Operasional">Operasional</option>
+                                    <option value="Gaji">Gaji / Upah</option>
+                                    <option value="Pemasaran">Pemasaran</option>
+                                    <option value="Lain-lain">Lain-lain</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deskripsi Transaksi</label>
                             <input type="text" id="tx-desc" placeholder="Contoh: Penjualan Event, Beli Kemasan..." class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
                         </div>
                         <div class="space-y-2">
@@ -1073,9 +1074,14 @@
 
         let productCatalogue = JSON.parse(localStorage.getItem('productCatalogue')) || DEFAULT_CATALOGUE;
         let productionHistory = JSON.parse(localStorage.getItem('productionHistory')) || [];
-        let cashTransactions = JSON.parse(localStorage.getItem('cashTransactions')) || [
-            { id: 1, type: 'income', desc: 'Sisa Saldo Kemarin', amount: 45250000, date: '2024-04-27' }
+        
+        const DEFAULT_TRANSACTIONS = [
+            { id: 1, type: 'income', category: 'Penjualan', desc: 'Penjualan Kopi Susu (15 Cup)', amount: 375000, date: '2026-04-29' },
+            { id: 2, type: 'expense', category: 'Bahan Baku', desc: 'Beli Susu UHT 1 Karton', amount: 210000, date: '2026-04-28' },
+            { id: 3, type: 'expense', category: 'Operasional', desc: 'Bayar Listrik Toko', amount: 450000, date: '2026-04-28' }
         ];
+        
+        let cashTransactions = JSON.parse(localStorage.getItem('cashTransactions')) || DEFAULT_TRANSACTIONS;
 
         function saveState() {
             localStorage.setItem('productCatalogue', JSON.stringify(productCatalogue));
@@ -1258,14 +1264,24 @@
             const btn = document.getElementById('btn-save-tx');
             const dateInput = document.getElementById('tx-date');
             
+            const incomeOpt = document.getElementById('opt-income');
+            const expenseOpt = document.getElementById('opt-expense');
+            const categorySelect = document.getElementById('tx-category');
+            
             dateInput.value = new Date().toISOString().split('T')[0];
 
             if (mode === 'income') {
                 title.innerText = 'Tambah Pemasukan';
                 btn.className = btn.className.replace('bg-danger', 'bg-primary').replace('shadow-danger/20', 'shadow-primary/20');
+                incomeOpt.style.display = 'block';
+                expenseOpt.style.display = 'none';
+                categorySelect.value = 'Penjualan';
             } else {
                 title.innerText = 'Catat Pengeluaran';
                 btn.className = btn.className.replace('bg-primary', 'bg-danger').replace('shadow-primary/20', 'shadow-danger/20');
+                incomeOpt.style.display = 'none';
+                expenseOpt.style.display = 'block';
+                categorySelect.value = 'Bahan Baku';
             }
             
             document.getElementById('transaction-modal').classList.remove('hidden');
@@ -1281,6 +1297,7 @@
             const desc = document.getElementById('tx-desc').value;
             const amount = parseInt(document.getElementById('tx-amount').value);
             const date = document.getElementById('tx-date').value;
+            const category = document.getElementById('tx-category').value;
 
             if (!desc || isNaN(amount) || amount <= 0) {
                 alert('Data transaksi tidak valid!');
@@ -1290,6 +1307,7 @@
             const newTx = {
                 id: Date.now(),
                 type: currentModalMode,
+                category,
                 desc,
                 amount,
                 date
@@ -1328,6 +1346,7 @@
             const desc = document.getElementById('sidebar-tx-desc').value;
             const amountInput = document.getElementById('sidebar-tx-amount');
             const amount = parseInt(amountInput.value);
+            const category = document.getElementById('sidebar-tx-category').value;
             const date = new Date().toISOString().split('T')[0];
 
             if (!desc || isNaN(amount) || amount <= 0) {
@@ -1338,6 +1357,7 @@
             const newTx = {
                 id: Date.now(),
                 type: sidebarTxMode,
+                category,
                 desc,
                 amount,
                 date
@@ -1390,8 +1410,19 @@
             const tableBody = document.getElementById('cash-table-body');
             if (!tableBody) return;
             
+            const filterCat = document.getElementById('filter-category').value;
+            const ds = document.getElementById('filter-date-start').value;
+            const de = document.getElementById('filter-date-end').value;
+
+            const filtered = cashTransactions.filter(tx => {
+                if (filterCat !== 'all' && tx.category !== filterCat) return false;
+                if (ds && tx.date < ds) return false;
+                if (de && tx.date > de) return false;
+                return true;
+            });
+
             tableBody.innerHTML = '';
-            cashTransactions.forEach(tx => {
+            filtered.forEach(tx => {
                 const isIncome = tx.type === 'income';
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1408,7 +1439,7 @@
                     </td>
                     <td class="px-6 py-5">
                         <span class="text-[10px] font-bold uppercase tracking-widest border border-slate-100 px-2.5 py-1 rounded-lg ${isIncome ? 'text-success' : 'text-danger'} bg-slate-50">
-                            ${isIncome ? 'Pemasukan' : 'Pengeluaran'}
+                            ${tx.category || (isIncome ? 'Pemasukan' : 'Pengeluaran')}
                         </span>
                     </td>
                     <td class="px-6 py-5">
@@ -1426,8 +1457,88 @@
             lucide.createIcons();
         }
 
+        let dashboardChart;
+
+        function updateCharts() {
+            const ctx1 = document.getElementById('cashflowChart');
+            if (!ctx1) return;
+
+            // Prepare last 7 days labels
+            const labels = [];
+            const incomeData = [];
+            const expenseData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dStr = date.toISOString().split('T')[0];
+                const dLabel = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                labels.push(dLabel);
+
+                let dayInc = 0;
+                let dayExp = 0;
+                cashTransactions.forEach(tx => {
+                    if (tx.date === dStr) {
+                        if (tx.type === 'income') dayInc += tx.amount;
+                        else dayExp += tx.amount;
+                    }
+                });
+                incomeData.push(dayInc / 1000000); // Scale to Juta
+                expenseData.push(dayExp / 1000000);
+            }
+
+            if (dashboardChart) {
+                dashboardChart.data.labels = labels;
+                dashboardChart.data.datasets[0].data = incomeData;
+                dashboardChart.data.datasets[1].data = expenseData;
+                dashboardChart.update();
+            } else {
+                dashboardChart = new Chart(ctx1.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Pemasukan',
+                                data: incomeData,
+                                borderColor: '#008080',
+                                backgroundColor: 'rgba(0, 128, 128, 0.05)',
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'Pengeluaran',
+                                data: expenseData,
+                                borderColor: '#e11d48',
+                                backgroundColor: 'rgba(225, 29, 72, 0.05)',
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: '#f1f5f9' },
+                                ticks: {
+                                    callback: function(value) { return 'Rp' + value + 'jt'; }
+                                }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
         function renderInitialData() {
             updateDashboardStats();
+            updateCharts();
             renderCashBook();
             const select = document.getElementById('prod-product-select');
             const currentValue = select.value;
@@ -1514,67 +1625,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             updateBatchCode();
             renderInitialData();
-            // Existing Charts...
-            // Dashboard Chart
-            const ctx1 = document.getElementById('cashflowChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: ['1 Apr', '5 Apr', '10 Apr', '15 Apr', '20 Apr', '25 Apr', '30 Apr'],
-                    datasets: [
-                        {
-                            label: 'Pemasukan',
-                            data: [4.5, 5.2, 4.8, 6.1, 5.5, 6.8, 7.2],
-                            borderColor: '#008080',
-                            backgroundColor: 'rgba(0, 128, 128, 0.05)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'Pengeluaran',
-                            data: [3.2, 3.1, 3.5, 3.8, 3.4, 4.1, 4.3],
-                            borderColor: '#e11d48',
-                            backgroundColor: 'rgba(225, 29, 72, 0.05)',
-                            tension: 0.4,
-                            fill: true,
-                            borderWidth: 3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: '#f1f5f9' },
-                            ticks: { callback: (v) => 'Rp' + v + 'jt', font: { weight: 600 } } 
-                        },
-                        x: { grid: { display: false }, ticks: { font: { weight: 600 } } }
-                    }
-                }
-            });
-
-            // Analisis Cost Pie Chart
-            const ctx2 = document.getElementById('costBreakdownChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Bahan Baku', 'Gaji', 'Sewa', 'Marketing'],
-                    datasets: [{
-                        data: [54, 30, 12, 4],
-                        backgroundColor: ['#008080', '#3b82f6', '#f59e0b', '#e11d48'],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    cutout: '70%',
-                    plugins: { legend: { display: false } }
-                }
-            });
+            lucide.createIcons();
         });
     </script>
 </body>
