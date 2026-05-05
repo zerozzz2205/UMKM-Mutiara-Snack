@@ -94,31 +94,31 @@
 
             <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
                 <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2 sidebar-label">Menu Utama</p>
-                <a href="#" onclick="showPage('dashboard')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all bg-white/10 text-white font-semibold" data-page="dashboard">
+                <a href="#dashboard" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all bg-white/10 text-white font-semibold" data-page="dashboard">
                     <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
                     <span class="sidebar-label">Dashboard</span>
                 </a>
-                <a href="#" onclick="showPage('buku-kas')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="buku-kas">
+                <a href="#buku-kas" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="buku-kas">
                     <i data-lucide="book-open" class="h-5 w-5"></i>
                     <span class="sidebar-label">Buku Kas Utama</span>
                 </a>
-                <a href="#" onclick="showPage('analisis')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="analisis">
+                <a href="#analisis" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="analisis">
                     <i data-lucide="trending-up" class="h-5 w-5"></i>
                     <span class="sidebar-label">Analisis Margin</span>
                 </a>
-                <a href="#" onclick="showPage('stok')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="stok">
+                <a href="#stok" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="stok">
                     <i data-lucide="package" class="h-5 w-5"></i>
                     <span class="sidebar-label">Manajemen Stok</span>
                 </a>
-                <a href="#" onclick="showPage('produksi')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="produksi">
+                <a href="#produksi" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="produksi">
                     <i data-lucide="factory" class="h-5 w-5"></i>
                     <span class="sidebar-label">Manajemen Produksi</span>
                 </a>
-                <a href="#" onclick="showPage('laporan')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="laporan">
+                <a href="#laporan" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="laporan">
                     <i data-lucide="file-text" class="h-5 w-5"></i>
                     <span class="sidebar-label">Laporan Export</span>
                 </a>
-                <a href="#" onclick="showPage('pengaturan')" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="pengaturan">
+                <a href="#pengaturan" class="nav-item flex items-center gap-3 h-11 px-3 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-all" data-page="pengaturan">
                     <i data-lucide="settings" class="h-5 w-5"></i>
                     <span class="sidebar-label">Pengaturan</span>
                 </a>
@@ -980,9 +980,9 @@
                     <button onclick="openTransactionModal('expense')" class="h-11 px-6 bg-danger text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
                         <i data-lucide="arrow-down-left" class="h-4 w-4"></i> Tambah Pengeluaran
                     </button>
-                    <button onclick="showPage('produksi')" class="h-11 px-6 bg-primary text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
+                    <a href="#produksi" class="h-11 px-6 bg-primary text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
                         <i data-lucide="factory" class="h-4 w-4"></i> Produksi Baru
-                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -1014,12 +1014,15 @@
 
         // SPA Navigation Helper
         function showPage(pageId) {
+            const pageElement = document.getElementById('page-' + pageId);
+            if (!pageElement) return;
+
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active-page');
             });
             // Show requested page
-            document.getElementById('page-' + pageId).classList.add('active-page');
+            pageElement.classList.add('active-page');
             
             // Update Breadcrumb
             const titles = {
@@ -1031,7 +1034,7 @@
                 laporan: 'Laporan Dashboard Export',
                 pengaturan: 'Pengaturan Global'
             };
-            document.getElementById('page-breadcrumb').innerText = titles[pageId];
+            document.getElementById('page-breadcrumb').innerText = titles[pageId] || 'Dashboard';
 
             // Update Nav Item UI
             document.querySelectorAll('.nav-item').forEach(nav => {
@@ -1043,11 +1046,19 @@
                 }
             });
 
-            // If mobile, close sidebar (optional)
-            if (window.innerWidth < 768) {
-                // logic to toggle sidebar
+            // Refresh charts if on dashboard
+            if (pageId === 'dashboard') {
+                updateCharts();
             }
         }
+
+        // Router logic
+        function handleRoute() {
+            const hash = window.location.hash.substring(1) || 'dashboard';
+            showPage(hash);
+        }
+
+        window.addEventListener('hashchange', handleRoute);
 
         // Floating Action Button logic
         const fabTrigger = document.getElementById('fab-trigger');
@@ -1625,6 +1636,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             updateBatchCode();
             renderInitialData();
+            handleRoute(); // Set initial page based on hash
             lucide.createIcons();
         });
     </script>
