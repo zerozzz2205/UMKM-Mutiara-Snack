@@ -872,7 +872,7 @@
                             </div>
                             <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Laba Rugi</h2>
                             <p class="text-sm text-slate-400 mb-8 font-medium">Ringkasan pendapatan bruto, COGS, dan laba bersih Anda.</p>
-                            <button class="w-full h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2">
+                            <button onclick="downloadSalesReport()" class="w-full h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2">
                                 <i data-lucide="download" class="h-4 w-4"></i> Download Laporan
                             </button>
                         </div>
@@ -888,7 +888,7 @@
                             </div>
                             <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Arus Kas</h2>
                             <p class="text-sm text-slate-400 mb-8 font-medium">Semua transaksi mutasi kas disusun secara kronologis.</p>
-                            <button class="w-full h-12 bg-info text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-info/10">
+                            <button onclick="downloadCashflowCSV()" class="w-full h-12 bg-info text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-info/10">
                                 <i data-lucide="download" class="h-4 w-4"></i> Download CSV
                             </button>
                         </div>
@@ -1466,6 +1466,8 @@
             document.getElementById('transaction-modal').classList.add('hidden');
             document.getElementById('tx-desc').value = '';
             document.getElementById('tx-amount').value = '';
+            editingTxId = null;
+            document.getElementById('btn-save-tx').innerText = 'Simpan Transaksi';
         }
 
         function saveTransaction() {
@@ -1479,22 +1481,37 @@
                 return;
             }
 
-            const newTx = {
-                id: Date.now(),
-                type: currentModalMode,
-                category,
-                desc,
-                amount,
-                date
-            };
+            if (editingTxId) {
+                // Update existing
+                const index = cashTransactions.findIndex(tx => tx.id === editingTxId);
+                if (index !== -1) {
+                    cashTransactions[index] = {
+                        ...cashTransactions[index],
+                        category,
+                        desc,
+                        amount,
+                        date
+                    };
+                }
+                editingTxId = null;
+            } else {
+                // Create new
+                const newTx = {
+                    id: Date.now(),
+                    type: currentModalMode,
+                    category,
+                    desc,
+                    amount,
+                    date
+                };
+                cashTransactions.unshift(newTx);
+            }
 
-            cashTransactions.unshift(newTx);
             saveState();
             renderInitialData();
             closeTransactionModal();
             
-            const msg = currentModalMode === 'income' ? 'Pemasukan berhasil dicatat!' : 'Pengeluaran berhasil dicatat!';
-            alert(msg);
+            alert('Transaksi berhasil disimpan!');
         }
 
         let sidebarTxMode = 'income';
@@ -1600,6 +1617,7 @@
             filtered.forEach(tx => {
                 const isIncome = tx.type === 'income';
                 const row = document.createElement('tr');
+                row.className = 'group hover:bg-slate-50 transition-colors';
                 row.innerHTML = `
                     <td class="px-6 py-5">
                         <div class="flex items-center gap-3">
@@ -1622,14 +1640,138 @@
                             ${isIncome ? '+' : '-'} Rp${tx.amount.toLocaleString()}
                         </p>
                     </td>
-                    <td class="px-6 py-5 text-right font-bold text-slate-400">Cash/Tunai</td>
-                    <td class="px-6 py-5 text-right">
-                        <span class="text-[10px] font-bold bg-success/10 text-success px-2 py-0.5 rounded">Success</span>
+                    <td class="px-6 py-5">
+                        <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editTransaction(${tx.id})" class="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors" title="Edit">
+                                <i data-lucide="edit-3" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteTransaction(${tx.id})" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Hapus">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
             lucide.createIcons();
+        }
+
+        // --- Transaction Actions ---
+        let editingTxId = null;
+
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                cashTransactions = cashTransactions.filter(tx => tx.id !== id);
+                saveState();
+                renderCashBook();
+                updateDashboardStats();
+                updateCharts();
+                alert('Transaksi berhasil dihapus.');
+            }
+        }
+
+        function editTransaction(id) {
+            const tx = cashTransactions.find(t => t.id === id);
+            if (!tx) return;
+
+            editingTxId = id;
+            openTransactionModal(tx.type);
+            
+            document.getElementById('modal-tx-title').innerText = 'Edit Transaksi';
+            document.getElementById('tx-desc').value = tx.desc;
+            document.getElementById('tx-amount').value = tx.amount;
+            document.getElementById('tx-date').value = tx.date;
+            document.getElementById('tx-category').value = tx.category;
+            
+            const btn = document.getElementById('btn-save-tx');
+            btn.innerText = 'Update Transaksi';
+        }
+
+        function downloadCashflowCSV() {
+            if (cashTransactions.length === 0) {
+                alert('Tidak ada data transaksi untuk diunduh.');
+                return;
+            }
+
+            // Simple CSV generation
+            const headers = ['Tanggal', 'Deskripsi', 'Kategori', 'Tipe', 'Nominal'];
+            const rows = cashTransactions.map(tx => [
+                tx.date,
+                `"${tx.desc}"`,
+                tx.category,
+                tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                tx.amount
+            ]);
+
+            const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `FinUMKM_Arus_Kas_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('Laporan Arus Kas (CSV) berhasil diunduh.');
+        }
+
+        function downloadSalesReport() {
+            if (cashTransactions.length === 0) {
+                alert('Tidak ada data untuk laporan.');
+                return;
+            }
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const incomeByCat = {};
+            const expenseByCat = {};
+
+            cashTransactions.forEach(tx => {
+                if (tx.type === 'income') {
+                    totalIncome += tx.amount;
+                    incomeByCat[tx.category] = (incomeByCat[tx.category] || 0) + tx.amount;
+                } else {
+                    totalExpense += tx.amount;
+                    expenseByCat[tx.category] = (expenseByCat[tx.category] || 0) + tx.amount;
+                }
+            });
+
+            // Creating a simple text summary as "Report"
+            const reportLines = [
+                "--------------------------------------------------",
+                "          FINUMKM - LAPORAN LABA RUGI           ",
+                "--------------------------------------------------",
+                `Generated on: ${new Date().toLocaleString('id-ID')}`,
+                "",
+                "PENDAPATAN",
+                ...Object.entries(incomeByCat).map(([cat, amt]) => ` - ${cat.padEnd(20)} : Rp${amt.toLocaleString()}`),
+                `TOTAL PENDAPATAN      : Rp${totalIncome.toLocaleString()}`,
+                "",
+                "PENGELUARAN",
+                ...Object.entries(expenseByCat).map(([cat, amt]) => ` - ${cat.padEnd(20)} : Rp${amt.toLocaleString()}`),
+                `TOTAL PENGELUARAN      : Rp${totalExpense.toLocaleString()}`,
+                "",
+                "--------------------------------------------------",
+                `LABA BERSIH          : Rp${(totalIncome - totalExpense).toLocaleString()}`,
+                "--------------------------------------------------",
+                "",
+                "Detail Transaksi:",
+                "Tanggal | Tipe | Deskripsi | Nominal",
+                ...cashTransactions.map(tx => `${tx.date} | ${tx.type === 'income' ? 'IN' : 'OUT'} | ${tx.desc.substring(0,20).padEnd(20)} | Rp${tx.amount.toLocaleString()}`)
+            ];
+
+            const textContent = reportLines.join("\n");
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `FinUMKM_Laba_Rugi_${new Date().toISOString().split('T')[0]}.txt`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('Laporan Laba Rugi (Text Summary) berhasil diunduh.');
         }
 
         let dashboardChart;
