@@ -575,7 +575,7 @@
                             <p class="text-sm md:text-base text-slate-500">Pantau inventaris dan kelola label identitas produk Anda.</p>
                         </div>
                         <div class="w-full md:w-auto">
-                            <button class="w-full md:w-auto h-12 md:h-10 px-6 flex items-center justify-center gap-3 bg-primary text-white rounded-2xl md:rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95 no-print">
+                            <button onclick="openInventoryModal()" class="w-full md:w-auto h-12 md:h-10 px-6 flex items-center justify-center gap-3 bg-primary text-white rounded-2xl md:rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95 no-print">
                                 <i data-lucide="plus" class="h-5 w-5 md:h-4 md:w-4"></i> Tambah Item
                             </button>
                         </div>
@@ -971,6 +971,90 @@
                 </div>
             </div>
 
+            <!-- Inventory Modal -->
+            <div id="inventory-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-md">
+                <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="space-y-1">
+                            <h3 id="modal-inv-title" class="font-bold text-xl tracking-tight text-slate-900">Tambah Item Stok</h3>
+                            <p class="text-xs text-slate-400">Kelola informasi produk dan stok inventaris UMKM.</p>
+                        </div>
+                        <button onclick="closeInventoryModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"><i data-lucide="x" class="h-6 w-6"></i></button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Produk</label>
+                            <input type="text" id="inv-name" placeholder="Contoh: Kripik Singkong Madu" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">SKU (Kode)</label>
+                                <input type="text" id="inv-sku" placeholder="SNK-001" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-primary/20 outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Barcode</label>
+                                <input type="text" id="inv-barcode" placeholder="899..." class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-primary/20 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">HPP per Unit</label>
+                                <input type="number" id="inv-hpp" placeholder="0" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Stok Awal</label>
+                                <input type="number" id="inv-stock" placeholder="0" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 mt-8">
+                        <button onclick="saveInventoryItem()" class="h-14 bg-primary text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 active:scale-95 group">
+                            <span id="btn-save-inv-text">Simpan Item Stok</span>
+                            <i data-lucide="check-circle" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Edit Modal -->
+            <div id="production-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-md">
+                <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="space-y-1">
+                            <h3 class="font-bold text-xl tracking-tight text-slate-900">Koreksi Batch Produksi</h3>
+                            <p class="text-xs text-slate-400">Sesuaikan jumlah output atau informasi batch yang salah.</p>
+                        </div>
+                        <button onclick="closeProductionModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"><i data-lucide="x" class="h-6 w-6"></i></button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Produk (Batch <span id="edit-prod-batch-code"></span>)</label>
+                            <input type="text" id="edit-prod-name" disabled class="w-full h-12 px-5 bg-slate-100 border border-slate-100 rounded-2xl text-sm font-bold text-slate-400 cursor-not-allowed">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">HPP Terkunci</label>
+                                <input type="text" id="edit-prod-hpp" disabled class="w-full h-12 px-5 bg-slate-100 border border-slate-100 rounded-2xl text-xs font-bold text-slate-400">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Batch Qty</label>
+                                <input type="number" id="edit-prod-qty" placeholder="0" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black text-primary focus:ring-2 focus:ring-primary/20 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 mt-8">
+                        <button onclick="saveProductionEdit()" class="h-14 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-black transition-all shadow-xl active:scale-95 group">
+                            <span>Simpan Perubahan Batch</span>
+                            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Floating Action Button -->
             <div class="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-end group">
                 <button id="fab-trigger" class="h-14 w-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-primary/30">
@@ -986,6 +1070,9 @@
                     <a href="#produksi" class="h-11 px-6 bg-primary text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
                         <i data-lucide="factory" class="h-4 w-4"></i> Produksi Baru
                     </a>
+                    <button onclick="openInventoryModal()" class="h-11 px-6 bg-slate-900 text-white rounded-2xl shadow-xl flex items-center gap-3 text-xs font-bold uppercase tracking-widest hover:-translate-y-1 transition-all">
+                        <i data-lucide="package" class="h-4 w-4"></i> Tambah Item Stok
+                    </button>
                 </div>
             </div>
 
@@ -1181,6 +1268,8 @@
 
         let productCatalogue = JSON.parse(localStorage.getItem('productCatalogue')) || DEFAULT_CATALOGUE;
         let productionHistory = JSON.parse(localStorage.getItem('productionHistory')) || [];
+        let editingInventorySku = null;
+        let editingProductionIndex = null;
         
         const DEFAULT_TRANSACTIONS = [
             { id: 1, type: 'income', category: 'Penjualan', desc: 'Penjualan Kopi Susu (15 Cup)', amount: 375000, date: '2026-04-29' },
@@ -1366,6 +1455,7 @@
         let currentModalMode = 'income';
 
         function openTransactionModal(mode) {
+            if (fabOpen) fabTrigger.click(); // Autoclose FAB
             currentModalMode = mode;
             const title = document.getElementById('modal-tx-title');
             const btn = document.getElementById('btn-save-tx');
@@ -1985,6 +2075,141 @@
             }
         }
 
+        // --- Inventory Management Functions ---
+        function openInventoryModal(sku = null) {
+            if (fabOpen) fabTrigger.click(); // Autoclose FAB
+            editingInventorySku = sku;
+            const modalTitle = document.getElementById('modal-inv-title');
+            const submitBtnText = document.getElementById('btn-save-inv-text');
+            const skuInput = document.getElementById('inv-sku');
+
+            document.getElementById('inventory-modal').classList.remove('hidden');
+            
+            if (sku && productCatalogue[sku]) {
+                const p = productCatalogue[sku];
+                modalTitle.innerText = 'Edit Item Stok';
+                submitBtnText.innerText = 'Simpan Perubahan';
+                skuInput.value = sku;
+                skuInput.disabled = true; // SKU usually shouldn't change
+                
+                document.getElementById('inv-name').value = p.name || '';
+                document.getElementById('inv-barcode').value = p.barcode || '';
+                document.getElementById('inv-hpp').value = p.hpp || '';
+                document.getElementById('inv-stock').value = p.stock || '';
+            } else {
+                modalTitle.innerText = 'Tambah Item Stok';
+                submitBtnText.innerText = 'Simpan Item Stok';
+                skuInput.disabled = false;
+                // Reset fields
+                document.getElementById('inv-name').value = '';
+                document.getElementById('inv-sku').value = '';
+                document.getElementById('inv-barcode').value = '';
+                document.getElementById('inv-hpp').value = '';
+                document.getElementById('inv-stock').value = '';
+            }
+        }
+
+        function closeInventoryModal() {
+            document.getElementById('inventory-modal').classList.add('hidden');
+            editingInventorySku = null;
+        }
+
+        function saveInventoryItem() {
+            const name = document.getElementById('inv-name').value;
+            const skuInput = document.getElementById('inv-sku');
+            const sku = skuInput.value;
+            const barcode = document.getElementById('inv-barcode').value;
+            const hpp = parseInt(document.getElementById('inv-hpp').value) || 0;
+            const stock = parseInt(document.getElementById('inv-stock').value) || 0;
+
+            if (!name || !sku) {
+                alert('Nama Produk dan SKU wajib diisi!');
+                return;
+            }
+
+            // Update product catalogue
+            productCatalogue[sku] = {
+                ...(productCatalogue[sku] || {}),
+                name: name,
+                barcode: barcode,
+                hpp: hpp,
+                stock: stock,
+                shelfLife: productCatalogue[sku]?.shelfLife || 30, // Preserve shelfLife if editing
+                price: hpp * 1.5 // Default price logic
+            };
+
+            saveState();
+            renderInitialData(); // Re-render to show new items in tables
+            closeInventoryModal();
+            alert(editingInventorySku ? 'Data item berhasil diperbarui!' : 'Item stok berhasil ditambahkan!');
+        }
+
+        function deleteInventoryItem(sku) {
+            if (confirm(`Apakah Anda yakin ingin menghapus "${productCatalogue[sku].name}"? Semua data stok akan hilang.`)) {
+                delete productCatalogue[sku];
+                saveState();
+                renderInitialData();
+            }
+        }
+
+        // --- Production CRUD Functions ---
+        function closeProductionModal() {
+            document.getElementById('production-modal').classList.add('hidden');
+            editingProductionIndex = null;
+        }
+
+        function editProductionBatch(index) {
+            editingProductionIndex = index;
+            const batch = productionHistory[index];
+            if (!batch) return;
+
+            document.getElementById('edit-prod-batch-code').innerText = batch.batchCode;
+            document.getElementById('edit-prod-name').value = batch.productName;
+            document.getElementById('edit-prod-hpp').value = 'Rp' + batch.hpp.toLocaleString();
+            document.getElementById('edit-prod-qty').value = batch.qty;
+
+            document.getElementById('production-modal').classList.remove('hidden');
+        }
+
+        function saveProductionEdit() {
+            const newQty = parseInt(document.getElementById('edit-prod-qty').value);
+            if (isNaN(newQty) || newQty < 0) {
+                alert('Masukkan jumlah produksi yang valid.');
+                return;
+            }
+
+            const batch = productionHistory[editingProductionIndex];
+            const oldQty = batch.qty;
+            const sku = batch.sku;
+
+            // Adjust stock (remove old, add new)
+            if (productCatalogue[sku]) {
+                productCatalogue[sku].stock = (productCatalogue[sku].stock || 0) - oldQty + newQty;
+            }
+
+            // Update history entry
+            productionHistory[editingProductionIndex].qty = newQty;
+
+            saveState();
+            renderInitialData();
+            closeProductionModal();
+            alert('Batch produksi berhasil diperbarui!');
+        }
+
+        function deleteProductionBatch(index) {
+            const batch = productionHistory[index];
+            if (confirm(`Hapus riwayat produksi batch ${batch.batchCode}? Perhatian: Stok produk akan dikurangi sesuai jumlah batch ini.`)) {
+                const sku = batch.sku;
+                if (productCatalogue[sku]) {
+                    productCatalogue[sku].stock = Math.max(0, (productCatalogue[sku].stock || 0) - batch.qty);
+                }
+                
+                productionHistory.splice(index, 1);
+                saveState();
+                renderInitialData();
+            }
+        }
+
         function renderInitialData() {
             toggleDashboardTimeframe('bulanan');
             renderCashBook();
@@ -2039,10 +2264,15 @@
                         </td>
                         <td class="px-6 py-5 text-right font-bold text-slate-500">Rp${hpp.toLocaleString()}</td>
                         <td class="px-6 py-5 text-right font-bold text-primary">Rp${hargaJual.toLocaleString()}</td>
-                        <td class="px-6 py-5 text-right">
-                            <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400">
-                                <i data-lucide="more-vertical" class="h-4 w-4"></i>
-                            </button>
+                        <td class="px-6 py-5 text-right no-print">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="openInventoryModal('${sku}')" class="p-2 hover:bg-info/10 rounded-lg text-info transition-colors" title="Edit Item">
+                                    <i data-lucide="edit-3" class="h-4 w-4"></i>
+                                </button>
+                                <button onclick="deleteInventoryItem('${sku}')" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Hapus Item">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -2051,9 +2281,12 @@
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative';
                     card.innerHTML = `
-                        <div class="absolute top-4 right-4">
-                            <button class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-                                <i data-lucide="more-vertical" class="h-5 w-5"></i>
+                        <div class="absolute top-4 right-4 flex gap-1">
+                            <button onclick="openInventoryModal('${sku}')" class="p-2 hover:bg-slate-50 rounded-xl text-info transition-colors">
+                                <i data-lucide="edit-3" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteInventoryItem('${sku}')" class="p-2 hover:bg-slate-50 rounded-xl text-danger transition-colors">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
                             </button>
                         </div>
                         
@@ -2096,7 +2329,7 @@
             const historyBody = document.getElementById('production-history-body');
             if (historyBody) {
                 historyBody.innerHTML = '';
-                productionHistory.forEach(batch => {
+                productionHistory.forEach((batch, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="py-4">
@@ -2107,10 +2340,18 @@
                         <td class="px-3 py-4 text-right">
                             <span class="text-[10px] font-bold text-slate-400">${batch.expiryDate}</span>
                         </td>
-                        <td class="px-3 py-4 text-right">
-                            <button onclick="showLabelByBatch('${batch.batchCode}')" class="text-[10px] font-bold text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg flex items-center gap-1 ml-auto transition-colors">
-                                <i data-lucide="printer" class="h-3 w-3"></i> Cetak Ulang
-                            </button>
+                        <td class="px-3 py-4 text-right no-print">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="showLabelByBatch('${batch.batchCode}')" class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Print Label">
+                                    <i data-lucide="printer" class="h-3.5 w-3.5"></i>
+                                </button>
+                                <button onclick="editProductionBatch(${index})" class="p-2 hover:bg-info/10 rounded-lg text-info transition-colors" title="Edit Batch">
+                                    <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+                                </button>
+                                <button onclick="deleteProductionBatch(${index})" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Delete Batch">
+                                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                                </button>
+                            </div>
                         </td>
                     `;
                     historyBody.appendChild(row);
