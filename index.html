@@ -235,7 +235,7 @@
                 <div class="flex items-center gap-4">
                     <div class="relative hidden lg:block">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
-                        <input type="text" placeholder="Cari transaksi..." class="bg-slate-100 border-none h-10 w-64 rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20">
+                        <input type="text" id="navbar-search" onkeydown="handleGlobalSearch(event)" placeholder="Cari transaksi..." class="bg-slate-100 border-none h-10 w-64 rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20">
                     </div>
                     <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider">
                         <i data-lucide="wifi" class="h-3 w-3"></i>
@@ -1311,7 +1311,16 @@
 
         // SPA Navigation Helper
         function showPage(pageId) {
-            const pageElement = document.getElementById('page-' + pageId);
+            let actualPageId = pageId;
+            let searchParamVal = null;
+            if (pageId.includes('?')) {
+                const parts = pageId.split('?');
+                actualPageId = parts[0];
+                const urlParams = new URLSearchParams(parts[1]);
+                searchParamVal = urlParams.get('search');
+            }
+
+            const pageElement = document.getElementById('page-' + actualPageId);
             if (!pageElement) return;
 
             // Hide all pages
@@ -1331,23 +1340,49 @@
                 laporan: 'Laporan Dashboard Export',
                 pengaturan: 'Pengaturan Global'
             };
-            document.getElementById('page-breadcrumb').innerText = titles[pageId] || 'Dashboard';
+            document.getElementById('page-breadcrumb').innerText = titles[actualPageId] || 'Dashboard';
 
             // Update Nav Item UI
             document.querySelectorAll('.nav-item').forEach(nav => {
                 nav.classList.remove('bg-white/10', 'text-white', 'font-semibold');
                 nav.classList.add('text-white/70');
-                if (nav.getAttribute('data-page') === pageId) {
+                if (nav.getAttribute('data-page') === actualPageId) {
                     nav.classList.add('bg-white/10', 'text-white', 'font-semibold');
                     nav.classList.remove('text-white/70');
                 }
             });
 
             // Refresh charts if on dashboard
-            if (pageId === 'dashboard') {
+            if (actualPageId === 'dashboard') {
                 updateCharts();
             }
+
+            // Sync global search input
+            const navSearchEl = document.getElementById('navbar-search');
+            if (navSearchEl) {
+                navSearchEl.value = searchParamVal || '';
+            }
+
+            // If we are showing buku-kas and there's a search word, put it in #cash-search and re-render
+            if (actualPageId === 'buku-kas') {
+                const cashSearchEl = document.getElementById('cash-search');
+                if (cashSearchEl) {
+                    if (searchParamVal !== null && searchParamVal !== undefined) {
+                        cashSearchEl.value = searchParamVal;
+                    }
+                }
+                renderCashBook();
+            }
         }
+
+        // Global search input keydown handler
+        function handleGlobalSearch(event) {
+            if (event.key === 'Enter') {
+                const searchQuery = event.target.value.trim();
+                window.location.hash = `#buku-kas?search=${encodeURIComponent(searchQuery)}`;
+            }
+        }
+        window.handleGlobalSearch = handleGlobalSearch;
 
         // Router logic
         function handleRoute() {
@@ -1975,7 +2010,12 @@
                 }
                 if (ds && tx.date < ds) return false;
                 if (de && tx.date > de) return false;
-                if (searchQuery && !tx.desc.toLowerCase().includes(searchQuery) && !tx.category.toLowerCase().includes(searchQuery)) return false;
+                if (searchQuery) {
+                    const descMatch = tx.desc.toLowerCase().includes(searchQuery);
+                    const categoryMatch = (tx.category || '').toLowerCase().includes(searchQuery);
+                    const amountMatch = tx.amount.toString().includes(searchQuery);
+                    if (!descMatch && !categoryMatch && !amountMatch) return false;
+                }
                 return true;
             });
 
