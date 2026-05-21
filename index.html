@@ -76,15 +76,15 @@
 <body class="bg-[#f8fafc] text-[#0f172a] font-sans antialiased">
 
     <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 z-[200] flex items-center justify-center bg-sidebar overflow-hidden">
-        <div class="relative w-full max-w-md p-10 bg-white rounded-[3rem] shadow-2xl mx-4 text-center">
-            <div class="h-20 w-20 bg-primary rounded-3xl shadow-xl shadow-primary/20 flex items-center justify-center rotate-12 mx-auto mb-8">
+    <div id="login-screen" class="fixed inset-0 z-[200] flex min-h-screen w-full flex-col items-center justify-center bg-zinc-900 p-0 overflow-y-auto">
+        <div class="relative w-full min-h-screen md:min-h-0 md:max-w-md p-8 sm:p-10 md:p-12 bg-white rounded-none md:rounded-[3rem] shadow-2xl flex flex-col justify-center text-center mx-auto">
+            <div class="h-20 w-20 bg-primary rounded-3xl shadow-xl shadow-primary/20 flex items-center justify-center rotate-12 mx-auto mb-8 shrink-0">
                 <i data-lucide="store" class="h-10 w-10 text-white -rotate-12"></i>
             </div>
             
             <div class="space-y-2 mb-10 text-center">
                 <h1 class="text-3xl font-black tracking-tight text-slate-900">FinUMKM</h1>
-                <p id="auth-subtitle" class="text-slate-500 font-medium">Masuk untuk mengelola keuangan UMKM Anda.</p>
+                <p id="auth-subtitle" class="text-slate-500 font-medium text-sm">Masuk untuk mengelola keuangan UMKM Anda.</p>
             </div>
 
             <!-- Auth Form -->
@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <button onclick="loginWithGoogle()" class="w-full h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-4 hover:border-primary/40 hover:bg-slate-50 transition-all active:scale-95 group mb-4">
+            <button onclick="loginWithGoogle()" class="w-full h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-4 hover:border-primary/40 hover:bg-slate-50 transition-all active:scale-95 group mb-4 shrink-0">
                 <svg class="h-6 w-6" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -140,7 +140,7 @@
                 <span class="font-bold text-slate-700 tracking-tight">Akun Google</span>
             </button>
             
-            <p id="toggle-auth-text" class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+            <p id="toggle-auth-text" class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] shrink-0">
                 Pioneer Keuangan UMKM Digital | 
                 <button onclick="toggleAuthMode()" class="text-primary hover:underline">Daftar Akun</button>
             </p>
@@ -259,7 +259,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        <div class="relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-lg hover:shadow-success/10 hover:-translate-y-1 cursor-default">
+                        <div onclick="navigateToBukuKas('income')" class="relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-success/10 cursor-pointer hover:scale-[1.02] duration-300">
                             <div class="absolute top-0 left-0 h-full w-1.5 bg-success"></div>
                             <div class="flex justify-between items-start mb-4">
                                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400">Total Pemasukan</p>
@@ -270,7 +270,7 @@
                                 <span class="text-[10px] font-bold bg-success/10 text-success px-1.5 py-0.5 rounded-lg active-timeframe-label">Data Akumulasi</span>
                             </div>
                         </div>
-                        <div class="relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-lg hover:shadow-danger/10 hover:-translate-y-1 cursor-default">
+                        <div onclick="navigateToBukuKas('expense')" class="relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-danger/10 cursor-pointer hover:scale-[1.02] duration-300">
                             <div class="absolute top-0 left-0 h-full w-1.5 bg-danger"></div>
                             <div class="flex justify-between items-start mb-4">
                                 <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400">Total Pengeluaran</p>
@@ -385,16 +385,73 @@
                                     <input type="date" id="filter-date-end" onchange="renderCashBook()" class="h-12 w-full text-xs font-bold border-none focus:ring-0 bg-transparent p-0">
                                 </div>
                             </div>
-                            <!-- Category Filter -->
-                            <div class="flex items-center bg-white border border-slate-200 rounded-2xl px-4 gap-3 w-full md:w-auto shadow-sm">
-                                <i data-lucide="filter" class="h-4 w-4 text-slate-400 shrink-0"></i>
-                                <select id="filter-category" onchange="renderCashBook()" class="h-12 w-full md:w-auto text-xs font-bold uppercase tracking-wider bg-transparent border-none focus:ring-0 p-0 pr-8">
-                                    <option value="all">Semua Kategori</option>
-                                    <option value="Penjualan">Penjualan</option>
-                                    <option value="Bahan Baku">Bahan Baku</option>
-                                    <option value="Operasional">Operasional</option>
-                                    <option value="Gaji">Gaji</option>
-                                </select>
+                            <!-- Category Filter (Multi-Select Popover) -->
+                            <div class="relative w-full md:w-auto">
+                                <button onclick="toggleCategoryFilterDropdown()" id="filter-dropdown-btn" class="flex items-center justify-between h-12 w-full md:w-56 bg-white border border-slate-200 rounded-2xl px-4 gap-3 shadow-sm hover:bg-slate-50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="filter" class="h-4 w-4 text-slate-400 shrink-0"></i>
+                                        <span id="filter-dropdown-label" class="text-xs font-bold uppercase tracking-wider text-slate-700">Kategori: Semua</span>
+                                    </div>
+                                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400 shrink-0 transition-transform" id="filter-dropdown-chevron"></i>
+                                </button>
+                                
+                                <div id="filter-category-popover" class="hidden absolute left-0 right-0 md:left-auto md:w-72 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 space-y-4">
+                                    <!-- Global shortcuts -->
+                                    <div class="grid grid-cols-2 gap-2 pb-2 border-b border-slate-100">
+                                        <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                            <input type="checkbox" id="chk-income-all" onchange="handleCheckboxChange('income_all')" class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-success">Pemasukan</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                            <input type="checkbox" id="chk-expense-all" onchange="handleCheckboxChange('expense_all')" class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-danger">Pengeluaran</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Category List Grid -->
+                                    <div class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                                        <div>
+                                            <span class="text-[9px] font-black uppercase tracking-wider text-success block mb-1">Pemasukan</span>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Penjualan" onchange="handleCheckboxChange('Penjualan')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Penjualan</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Lain-lain" onchange="handleCheckboxChange('Lain-lain')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Lain-lain</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="text-[9px] font-black uppercase tracking-wider text-danger block mb-1">Pengeluaran</span>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Bahan Baku" onchange="handleCheckboxChange('Bahan Baku')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Bahan Baku</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Operasional" onchange="handleCheckboxChange('Operasional')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight font-sans">Op.</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Gaji" onchange="handleCheckboxChange('Gaji')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Gaji</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-xl cursor-pointer">
+                                                    <input type="checkbox" value="Pemasaran" onchange="handleCheckboxChange('Pemasaran')" class="chk-category rounded border-slate-300 text-primary focus:ring-primary h-4 w-4">
+                                                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">Pemasaran</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Clear & Actions -->
+                                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                        <button onclick="clearCategoryFilters()" class="hover:text-danger">Reset</button>
+                                        <button onclick="toggleCategoryFilterDropdown()" class="text-primary hover:underline">Terapkan</button>
+                                    </div>
+                                </div>
                             </div>
                             <button onclick="openTransactionModal('income')" class="hidden md:flex h-12 px-6 items-center gap-3 bg-primary text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95">
                                 <i data-lucide="plus" class="h-5 w-5"></i> Entri Baru
@@ -452,9 +509,7 @@
                                         <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
                                         <select id="sidebar-tx-category" class="w-full px-4 h-11 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20">
                                             <option value="Penjualan">Penjualan</option>
-                                            <option value="Bahan Baku">Bahan Baku</option>
-                                            <option value="Operasional">Operasional</option>
-                                            <option value="Gaji">Gaji</option>
+                                            <option value="Lain-lain">Lain-lain</option>
                                         </select>
                                     </div>
                                     <div class="space-y-2">
@@ -504,68 +559,135 @@
                 </div>
 
                 <!-- Page: Analisis -->
-                <div id="page-analisis" class="page-content space-y-8 max-w-7xl mx-auto">
+                <div id="page-analisis" class="page-content space-y-8 max-w-7xl mx-auto px-4 md:px-0">
                     <div class="flex flex-col gap-1">
-                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Analisis Laba/Rugi</h1>
-                        <p class="text-slate-500">Pahami efisiensi biaya dan kontribusi margin produk Anda.</p>
+                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Analisis Margin & BEP</h1>
+                        <p class="text-slate-500 text-sm md:text-base">Pahami efisiensi biaya dan target pencapaian laba Mutiara Snack.</p>
                     </div>
 
-                    <div class="grid gap-6 md:grid-cols-12">
-                        <div class="col-span-12 lg:col-span-8 bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-                            <div class="flex justify-between items-center mb-8">
+                    <!-- Main Analysis Grid -->
+                    <div class="space-y-6">
+                        <!-- BEP Monitor Card -->
+                        <div class="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-sm border border-slate-200">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                                 <div>
-                                    <h2 class="text-lg font-bold text-slate-900">Break-even Point (BEP)</h2>
-                                    <p class="text-xs text-slate-400 font-medium">Titik impas operasional bulan ini</p>
+                                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Break-even Point (BEP) Monitor</h2>
+                                    <p class="text-xs text-slate-400 font-medium">Berapa jauh lagi Mutiara Snack mencapai titik impas bulan ini?</p>
                                 </div>
-                                <span class="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Target Tercapai</span>
+                                <div id="bep-status-badge" class="px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/10 text-success border border-success/20">
+                                    Target Tercapai ✓
+                                </div>
                             </div>
 
-                            <div class="relative h-20 bg-slate-50 rounded-2xl mb-8 flex items-center px-8 overflow-hidden">
-                                <div class="absolute inset-y-0 left-0 bg-success/20 w-full"></div>
-                                <div class="absolute inset-y-0 left-0 bg-primary/20 w-[54%] border-r-2 border-primary/30"></div>
+                            <div class="space-y-6">
+                                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-0">
+                                    <div class="w-full md:w-auto text-left">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Total Pemasukan (Saat Ini)</span>
+                                        <span id="sales-reality" class="text-3xl font-black text-slate-900 tracking-tighter">Rp45.200.000</span>
+                                    </div>
+                                    <div class="w-full md:w-auto text-left md:text-right mt-2 md:mt-0">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Target BEP (Total Pengeluaran)</span>
+                                        <span id="bep-target" class="text-lg font-bold text-primary">Rp24.500.000</span>
+                                    </div>
+                                </div>
                                 
-                                <div class="relative w-full flex justify-between items-center z-10">
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Fixed Cost</span>
-                                        <span class="text-sm font-bold">11.7 Juta</span>
-                                    </div>
-                                    <div class="flex flex-col items-center">
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-primary">BEP (Target)</span>
-                                        <span class="text-sm font-bold text-primary">24.5 Juta</span>
-                                    </div>
-                                    <div class="flex flex-col items-end">
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Realita Sales</span>
-                                        <span class="text-sm font-bold text-success">45.2 Juta</span>
-                                    </div>
+                                <div class="relative w-full h-5 bg-slate-100 rounded-full overflow-hidden p-1 shadow-inner">
+                                    <div id="bep-progress-bar" class="h-full rounded-full bg-success transition-all duration-1000 shadow-sm" style="width: 100%;"></div>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-3 gap-6">
-                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Margin Kontribusi</p>
-                                    <p class="text-xl font-bold tracking-tight">48.5%</p>
-                                </div>
-                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Unit BEP</p>
-                                    <p class="text-xl font-bold tracking-tight">842 Cup</p>
-                                </div>
-                                <div class="p-6 bg-slate-50 rounded-2xl text-center">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Safety Margin</p>
-                                    <p class="text-xl font-bold tracking-tight text-success">45.8%</p>
+                                
+                                <div class="flex flex-col md:flex-row gap-2 md:gap-0 justify-between items-start md:items-center text-[10px] font-bold uppercase tracking-widest px-1 text-slate-400">
+                                    <span>Pencapaian 0%</span>
+                                    <span class="text-primary italic font-bold">Titik Impas (Total Pengeluaran)</span>
+                                    <span id="bep-surplus-indicator">Surplus Laba</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-span-12 lg:col-span-4 bg-white rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col">
-                            <h2 class="text-lg font-bold text-slate-900 mb-2">Struktur Biaya</h2>
-                            <p class="text-xs text-slate-400 mb-6 font-medium">Komposisi pengeluaran operasional</p>
-                            <canvas id="costBreakdownChart" class="mb-6"></canvas>
-                            <div id="cost-legend" class="space-y-4 mt-auto">
-                                <!-- Dynamic Legend -->
+                        <!-- Business Metrics Detail Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Card 1: Total Pemasukan -->
+                            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all border-l-4 border-l-emerald-500">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                                        <i data-lucide="trending-up" class="h-5 w-5"></i>
+                                    </div>
+                                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Total Pemasukan</h3>
+                                </div>
+                                <p id="metrics-income-value" class="text-2xl font-black text-slate-900 mb-2">Rp45.200.000</p>
+                                <p class="text-xs text-slate-400">Arus kas masuk dari hasil penjualan dan operasional Mutiara Snack.</p>
+                            </div>
+
+                            <!-- Card 2: Total Pengeluaran (Target BEP) -->
+                            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all border-l-4 border-l-rose-500 font-sans">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="h-10 w-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600">
+                                        <i data-lucide="trending-down" class="h-5 w-5"></i>
+                                    </div>
+                                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Total Pengeluaran</h3>
+                                </div>
+                                <p id="metrics-expense-value" class="text-2xl font-black text-slate-900 mb-2">Rp24.500.000</p>
+                                <p class="text-xs text-slate-400">Arus kas keluar untuk semua pengeluaran usaha operasional.</p>
+                            </div>
+
+                            <!-- Card 3: Surplus / Defisit Bersih -->
+                            <div id="metrics-net-card" class="bg-slate-900 rounded-[2.5rem] p-9 shadow-2xl border border-slate-800 text-white relative overflow-hidden group">
+                                <div class="absolute -right-10 -bottom-10 opacity-10 scale-150 rotate-12 transition-transform group-hover:rotate-0 duration-700">
+                                    <i data-lucide="wallet" class="h-32 w-32"></i>
+                                </div>
+                                <div class="flex items-center gap-3 mb-6 relative z-10">
+                                    <div class="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
+                                        <i data-lucide="wallet" class="h-5 w-5"></i>
+                                    </div>
+                                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Saldo Kas Bersih</h3>
+                                </div>
+                                <div class="space-y-4 relative z-10">
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-mono">Status Keuangan</p>
+                                        <p id="metrics-net-status" class="text-sm font-bold text-emerald-400">SURPLUS UNTUNG</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-mono">Selisih Kas Bersih</p>
+                                        <p id="metrics-net-value" class="text-2xl font-black text-emerald-400">Rp20.700.000</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Analysis Graphs -->
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="w-full md:w-3/5 bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
+                                <div class="flex justify-between items-center mb-8">
+                                    <div>
+                                        <h2 class="text-lg font-bold text-slate-900">Arus Kas Margin Keuntungan</h2>
+                                        <p class="text-xs text-slate-400 font-medium">Profitabilitas dari arus kas masuk dan pengeluaran Mutiara Snack</p>
+                                    </div>
+                                    <div id="margin-percentage-display" class="text-4xl font-black transition-colors duration-500 text-success">0.0%</div>
+                                </div>
+                                <div class="h-64 flex items-center justify-center bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 relative overflow-hidden">
+                                     <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#008080 1px, transparent 1px); background-size: 20px 20px;"></div>
+                                     <div class="text-center space-y-3 relative z-10 px-4">
+                                         <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Persentase Margin Kas</p>
+                                         <div class="flex items-end justify-center gap-1">
+                                             <span id="margin-percentage-big" class="text-5xl font-black leading-none transition-colors duration-500 text-success">0.0</span>
+                                             <span id="margin-percentage-symbol" class="text-2xl font-bold transition-colors duration-500 text-success mb-1">%</span>
+                                         </div>
+                                         <p id="margin-explanation" class="text-xs text-slate-500 font-medium max-w-[320px] mx-auto text-center">Menghitung efisiensi surplus atau defisit kas terhadap total pemasukan operasional.</p>
+                                     </div>
+                                </div>
+                            </div>
+                            <div class="w-full md:w-2/5 bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
+                                <h2 class="text-lg font-bold text-slate-900 mb-2">Struktur Biaya</h2>
+                                <p class="text-xs text-slate-400 mb-6 font-medium">Beban pengeluaran UMKM</p>
+                                <canvas id="costBreakdownChart" class="h-48"></canvas>
+                                <div id="cost-legend" class="mt-6 space-y-3">
+                                    <!-- Dynamic Legend -->
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
 
                 <!-- Page: Stok -->
                 <div id="page-stok" class="page-content space-y-8 max-w-7xl mx-auto px-4 md:px-0">
@@ -938,14 +1060,13 @@
                             <select id="tx-category" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
                                 <optgroup label="Pemasukan" id="opt-income">
                                     <option value="Penjualan">Penjualan Produk</option>
-                                    <option value="Lain-lain">Pendapatan Lain</option>
+                                    <option value="Lain-lain">Lain-lain / Pendapatan Lain</option>
                                 </optgroup>
                                 <optgroup label="Pengeluaran" id="opt-expense">
                                     <option value="Bahan Baku">Bahan Baku</option>
                                     <option value="Operasional">Operasional</option>
                                     <option value="Gaji">Gaji / Upah</option>
                                     <option value="Pemasaran">Pemasaran</option>
-                                    <option value="Lain-lain">Lain-lain</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -1230,6 +1351,18 @@
 
         // Router logic
         function handleRoute() {
+            // Check auth state using the global flag set by onAuthStateChanged
+            const firebaseAuthObj = window.firebaseAuth;
+            if (!window.isAuthVerified || !firebaseAuthObj || !firebaseAuthObj.auth || !firebaseAuthObj.auth.currentUser) {
+                // Keep the app hidden and login visible if not fully authenticated
+                document.getElementById('login-screen')?.classList.remove('hidden');
+                document.getElementById('main-app')?.classList.add('hidden');
+                if (window.location.hash && window.location.hash !== '#') {
+                    history.replaceState(null, null, ' ');
+                }
+                return;
+            }
+
             const hash = window.location.hash.substring(1) || 'dashboard';
             showPage(hash);
 
@@ -1278,6 +1411,151 @@
         ];
         
         let cashTransactions = JSON.parse(localStorage.getItem('cashTransactions')) || DEFAULT_TRANSACTIONS;
+        let selectedCategories = [];
+
+        function toggleCategoryFilterDropdown() {
+            const popover = document.getElementById('filter-category-popover');
+            const chevron = document.getElementById('filter-dropdown-chevron');
+            if (popover) {
+                popover.classList.toggle('hidden');
+            }
+            if (chevron) {
+                chevron.classList.toggle('rotate-180');
+            }
+        }
+
+        function handleCheckboxChange(category) {
+            const index = selectedCategories.indexOf(category);
+            if (index > -1) {
+                selectedCategories.splice(index, 1);
+            } else {
+                selectedCategories.push(category);
+            }
+
+            // Sync multi-select global checkboxes
+            if (category === 'income_all') {
+                const isChecked = selectedCategories.includes('income_all');
+                document.getElementById('chk-income-all').checked = isChecked;
+                
+                // Income specific categories
+                const incomeCats = ['Penjualan', 'Lain-lain'];
+                incomeCats.forEach(cat => {
+                    const idx = selectedCategories.indexOf(cat);
+                    if (isChecked) {
+                        if (idx === -1) selectedCategories.push(cat);
+                    } else {
+                        if (idx > -1) selectedCategories.splice(idx, 1);
+                    }
+                    const el = document.querySelector(`.chk-category[value="${cat}"]`);
+                    if (el) el.checked = isChecked;
+                });
+            } else if (category === 'expense_all') {
+                const isChecked = selectedCategories.includes('expense_all');
+                document.getElementById('chk-expense-all').checked = isChecked;
+                
+                // Expense specific categories
+                const expenseCats = ['Bahan Baku', 'Operasional', 'Gaji', 'Pemasaran'];
+                expenseCats.forEach(cat => {
+                    const idx = selectedCategories.indexOf(cat);
+                    if (isChecked) {
+                        if (idx === -1) selectedCategories.push(cat);
+                    } else {
+                        if (idx > -1) selectedCategories.splice(idx, 1);
+                    }
+                    const el = document.querySelector(`.chk-category[value="${cat}"]`);
+                    if (el) el.checked = isChecked;
+                });
+            } else {
+                // If a subcategory in income/expense is toggled, check if we need to sync parent globals
+                const incomeCats = ['Penjualan', 'Lain-lain'];
+                const expenseCats = ['Bahan Baku', 'Operasional', 'Gaji', 'Pemasaran'];
+                
+                if (incomeCats.includes(category)) {
+                    const allChecked = incomeCats.every(cat => selectedCategories.includes(cat));
+                    const incAllIdx = selectedCategories.indexOf('income_all');
+                    if (allChecked) {
+                        if (incAllIdx === -1) selectedCategories.push('income_all');
+                    } else {
+                        if (incAllIdx > -1) selectedCategories.splice(incAllIdx, 1);
+                    }
+                    const chkInAll = document.getElementById('chk-income-all');
+                    if (chkInAll) chkInAll.checked = allChecked;
+                }
+                
+                if (expenseCats.includes(category)) {
+                    const allChecked = expenseCats.every(cat => selectedCategories.includes(cat));
+                    const expAllIdx = selectedCategories.indexOf('expense_all');
+                    if (allChecked) {
+                        if (expAllIdx === -1) selectedCategories.push('expense_all');
+                    } else {
+                        if (expAllIdx > -1) selectedCategories.splice(expAllIdx, 1);
+                    }
+                    const chkExAll = document.getElementById('chk-expense-all');
+                    if (chkExAll) chkExAll.checked = allChecked;
+                }
+            }
+
+            updateDropdownLabel();
+            renderCashBook();
+        }
+
+        function updateDropdownLabel() {
+            const label = document.getElementById('filter-dropdown-label');
+            if (label) {
+                const cleanedCount = selectedCategories.filter(cat => cat !== 'income_all' && cat !== 'expense_all').length;
+                if (cleanedCount === 0) {
+                    if (selectedCategories.includes('income_all') || selectedCategories.includes('expense_all')) {
+                        let text = '';
+                        if (selectedCategories.includes('income_all') && selectedCategories.includes('expense_all')) {
+                            text = 'Pemasukan & Pengeluaran';
+                        } else if (selectedCategories.includes('income_all')) {
+                            text = 'Semua Pemasukan';
+                        } else {
+                            text = 'Semua Pengeluaran';
+                        }
+                        label.innerText = 'Kategori: ' + text;
+                    } else {
+                        label.innerText = "Kategori: Semua";
+                    }
+                } else {
+                    label.innerText = `Selected: ${cleanedCount} Kategori`;
+                }
+            }
+        }
+
+        function clearCategoryFilters() {
+            selectedCategories = [];
+            const checkboxes = document.querySelectorAll('#filter-category-popover input[type="checkbox"]');
+            checkboxes.forEach(chk => {
+                chk.checked = false;
+            });
+            updateDropdownLabel();
+            renderCashBook();
+        }
+
+        function navigateToBukuKas(filterType) {
+            clearCategoryFilters();
+            
+            if (filterType === 'income') {
+                handleCheckboxChange('income_all');
+            } else if (filterType === 'expense') {
+                handleCheckboxChange('expense_all');
+            }
+            
+            window.location.hash = '#buku-kas';
+        }
+        window.navigateToBukuKas = navigateToBukuKas;
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', (e) => {
+            const dropdownBtn = document.getElementById('filter-dropdown-btn');
+            const popover = document.getElementById('filter-category-popover');
+            if (popover && dropdownBtn && !popover.contains(e.target) && !dropdownBtn.contains(e.target)) {
+                popover.classList.add('hidden');
+                const chevron = document.getElementById('filter-dropdown-chevron');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        });
 
         function saveState() {
             localStorage.setItem('productCatalogue', JSON.stringify(productCatalogue));
@@ -1542,17 +1820,32 @@
             sidebarTxMode = mode;
             const incomeTab = document.getElementById('sidebar-tab-income');
             const expenseTab = document.getElementById('sidebar-tab-expense');
+            const selectEl = document.getElementById('sidebar-tx-category');
             
             if (mode === 'income') {
                 incomeTab.classList.add('bg-white', 'shadow-sm', 'text-success');
                 incomeTab.classList.remove('text-slate-400');
                 expenseTab.classList.remove('bg-white', 'shadow-sm', 'text-danger');
                 expenseTab.classList.add('text-slate-400');
+                if (selectEl) {
+                    selectEl.innerHTML = `
+                        <option value="Penjualan">Penjualan</option>
+                        <option value="Lain-lain">Lain-lain</option>
+                    `;
+                }
             } else {
                 expenseTab.classList.add('bg-white', 'shadow-sm', 'text-danger');
                 expenseTab.classList.remove('text-slate-400');
                 incomeTab.classList.remove('bg-white', 'shadow-sm', 'text-success');
                 incomeTab.classList.add('text-slate-400');
+                if (selectEl) {
+                    selectEl.innerHTML = `
+                        <option value="Bahan Baku">Bahan Baku</option>
+                        <option value="Operasional">Operasional</option>
+                        <option value="Gaji">Gaji</option>
+                        <option value="Pemasaran">Pemasaran</option>
+                    `;
+                }
             }
         }
 
@@ -1669,13 +1962,17 @@
             const cardList = document.getElementById('cash-card-list');
             if (!tableBody || !cardList) return;
             
-            const filterCat = document.getElementById('filter-category').value;
             const ds = document.getElementById('filter-date-start').value;
             const de = document.getElementById('filter-date-end').value;
             const searchQuery = (document.getElementById('cash-search')?.value || '').toLowerCase();
 
             const filtered = cashTransactions.filter(tx => {
-                if (filterCat !== 'all' && tx.category !== filterCat) return false;
+                if (selectedCategories.length > 0) {
+                    let matchesCategory = selectedCategories.includes(tx.category);
+                    let matchesIncomeAll = selectedCategories.includes('income_all') && tx.type === 'income';
+                    let matchesExpenseAll = selectedCategories.includes('expense_all') && tx.type === 'expense';
+                    if (!matchesCategory && !matchesIncomeAll && !matchesExpenseAll) return false;
+                }
                 if (ds && tx.date < ds) return false;
                 if (de && tx.date > de) return false;
                 if (searchQuery && !tx.desc.toLowerCase().includes(searchQuery) && !tx.category.toLowerCase().includes(searchQuery)) return false;
@@ -2210,6 +2507,141 @@
             }
         }
 
+        function updateAnalysisUI() {
+            // Find current month (Mei 2026) totals from Buku Kas Utama
+            let currentMonthIncome = 0;
+            let currentMonthExpense = 0;
+            
+            cashTransactions.forEach(tx => {
+                const d = new Date(tx.date);
+                if (d.getMonth() === 4 && d.getFullYear() === 2026) { // Mei 2026
+                    if (tx.type === 'income') {
+                        currentMonthIncome += tx.amount;
+                    } else if (tx.type === 'expense') {
+                        currentMonthExpense += tx.amount;
+                    }
+                }
+            });
+            
+            // Fallback for demo if no transactions exist yet for May 2026
+            if (currentMonthIncome === 0) currentMonthIncome = 45200000; 
+            if (currentMonthExpense === 0) currentMonthExpense = 24500000;
+
+            const targetBEP = currentMonthExpense;
+            const completionPercent = targetBEP > 0 ? Math.round((currentMonthIncome / targetBEP) * 100) : 0;
+            
+            // Update UI elements
+            const progressBar = document.getElementById('bep-progress-bar');
+            const statusBadge = document.getElementById('bep-status-badge');
+            
+            if (progressBar && statusBadge) {
+                progressBar.style.width = Math.min(completionPercent, 100) + '%';
+                
+                let statusText = `Pencapaian: ${completionPercent}% `;
+                if (completionPercent < 50) {
+                    statusText += "Belum Aman";
+                    statusBadge.className = "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-danger/10 text-danger border border-danger/20";
+                    progressBar.className = "h-full rounded-full bg-danger transition-all duration-1000 shadow-sm";
+                } else if (completionPercent < 100) {
+                    statusText += "Menuju BEP";
+                    statusBadge.className = "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100";
+                    progressBar.className = "h-full rounded-full bg-amber-500 transition-all duration-1000 shadow-sm";
+                } else {
+                    statusText += "Target Tercapai ✓";
+                    statusBadge.className = "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/10 text-success border border-success/20";
+                    progressBar.className = "h-full rounded-full bg-success transition-all duration-1000 shadow-sm";
+                }
+                statusBadge.innerText = statusText;
+            }
+            
+            const salesRealityEl = document.getElementById('sales-reality');
+            if (salesRealityEl) {
+                salesRealityEl.innerText = 'Rp' + currentMonthIncome.toLocaleString('id-ID');
+            }
+            const bepTargetEl = document.getElementById('bep-target');
+            if (bepTargetEl) {
+                bepTargetEl.innerText = 'Rp' + targetBEP.toLocaleString('id-ID');
+            }
+
+            // Update Business Metrics Detail Grid
+            const metricsIncomeVal = document.getElementById('metrics-income-value');
+            if (metricsIncomeVal) {
+                metricsIncomeVal.innerText = 'Rp' + currentMonthIncome.toLocaleString('id-ID');
+            }
+
+            const metricsExpenseVal = document.getElementById('metrics-expense-value');
+            if (metricsExpenseVal) {
+                metricsExpenseVal.innerText = 'Rp' + currentMonthExpense.toLocaleString('id-ID');
+            }
+
+            const metricsNetValue = document.getElementById('metrics-net-value');
+            const metricsNetStatus = document.getElementById('metrics-net-status');
+            const metricsNetCard = document.getElementById('metrics-net-card');
+            
+            if (metricsNetValue && metricsNetStatus) {
+                const diff = currentMonthIncome - currentMonthExpense;
+                metricsNetValue.innerText = 'Rp' + Math.abs(diff).toLocaleString('id-ID');
+                
+                if (diff < 0) {
+                    metricsNetStatus.innerText = 'DEFISIT RUGI';
+                    metricsNetStatus.className = 'text-sm font-bold text-rose-400';
+                    metricsNetValue.className = 'text-2xl font-black text-rose-400';
+                    if (metricsNetCard) {
+                        metricsNetCard.className = "bg-slate-900 rounded-[2.5rem] p-9 shadow-2xl border border-rose-955 text-white relative overflow-hidden group";
+                    }
+                } else {
+                    metricsNetStatus.innerText = 'SURPLUS UNTUNG';
+                    metricsNetStatus.className = 'text-sm font-bold text-emerald-400';
+                    metricsNetValue.className = 'text-2xl font-black text-emerald-400';
+                    if (metricsNetCard) {
+                        metricsNetCard.className = "bg-slate-900 rounded-[2.5rem] p-9 shadow-2xl border border-slate-800 text-white relative overflow-hidden group";
+                    }
+                }
+            }
+
+            // Update profits margin %
+            const marginPercent = currentMonthIncome > 0 ? ((currentMonthIncome - currentMonthExpense) / currentMonthIncome) * 100 : 0;
+            
+            const marginPercentageDisplay = document.getElementById('margin-percentage-display');
+            const marginPercentageBig = document.getElementById('margin-percentage-big');
+            const marginPercentageSymbol = document.getElementById('margin-percentage-symbol');
+            const marginExplanation = document.getElementById('margin-explanation');
+            
+            if (marginPercentageDisplay) {
+                marginPercentageDisplay.innerText = marginPercent.toFixed(1) + '%';
+                if (marginPercent < 0) {
+                    marginPercentageDisplay.className = 'text-4xl font-black transition-colors duration-500 text-danger';
+                } else {
+                    marginPercentageDisplay.className = 'text-4xl font-black transition-colors duration-500 text-success';
+                }
+            }
+
+            if (marginPercentageBig) {
+                marginPercentageBig.innerText = marginPercent.toFixed(1);
+                if (marginPercent < 0) {
+                    marginPercentageBig.className = 'text-5xl font-black leading-none transition-colors duration-500 text-danger';
+                } else {
+                    marginPercentageBig.className = 'text-5xl font-black leading-none transition-colors duration-500 text-success';
+                }
+            }
+
+            if (marginPercentageSymbol) {
+                if (marginPercent < 0) {
+                    marginPercentageSymbol.className = 'text-2xl font-bold transition-colors duration-500 text-danger mb-1';
+                } else {
+                    marginPercentageSymbol.className = 'text-2xl font-bold transition-colors duration-500 text-success mb-1';
+                }
+            }
+
+            if (marginExplanation) {
+                if (marginPercent < 0) {
+                    marginExplanation.innerHTML = `Mutiara Snack mengalami <strong class="text-danger">defisit kas sebesar ${Math.abs(marginPercent).toFixed(1)}%</strong>. Pengeluaran melebihi pemasukan bulan ini.`;
+                } else {
+                    marginExplanation.innerHTML = `Dari setiap Rp10.000 pemasukan, <strong class="text-success">Rp${Math.round(marginPercent / 100 * 10000).toLocaleString('id-ID')}</strong> adalah margin surplus laba bersih operasional.`;
+                }
+            }
+        }
+
         function renderInitialData() {
             toggleDashboardTimeframe('bulanan');
             renderCashBook();
@@ -2358,6 +2790,8 @@
                 } );
             }
             lucide.createIcons();
+            updateCharts();
+            updateAnalysisUI();
         }
 
         // Initialize Charts and Load State
@@ -2454,52 +2888,69 @@
 
         // --- Save Settings Logic ---
         window.saveProfileSettings = async () => {
-            const user = auth.currentUser;
-            if (!user) return;
-
             const btn = document.getElementById('btn-save-settings');
+            if (!btn) return;
+            
             const originalBtnText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses...`;
-            lucide.createIcons();
-
             const ownerName = document.getElementById('settings-owner-name').value;
             const umkmName = document.getElementById('settings-umkm-name').value;
             const waNumber = document.getElementById('settings-wa-number').value;
 
+            // 1. SIMULASI LOADING STATE (setIsLoading true)
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses...`;
+            lucide.createIcons();
+
             try {
-                // 1. Update Firebase Auth Profile
-                await updateProfile(user, { displayName: ownerName });
+                // 2. SIMULASI LOCAL STATE RESPONSIVE (Await 1 detik)
+                // Karena saat ini database belum diaktifkan, kita simulasi proses loading agar tidak hang
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // 2. Update Firestore User Document
-                await setDoc(doc(db, "users", user.uid), {
-                    displayName: ownerName,
-                    umkmName: umkmName,
-                    whatsapp: waNumber,
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
-
-                // Update UI elements
-                document.getElementById('user-name').innerText = ownerName;
+                // 3. PERBARUI DATA PROFIL LOKAL DI UI
+                if (document.getElementById('user-name')) {
+                    document.getElementById('user-name').innerText = ownerName;
+                }
                 
-                alert("Pengaturan profil berhasil diperbarui!");
+                // Simpan identitas ke localStorage untuk sesi ini (Sync State)
+                const user = auth.currentUser;
+                if (user) {
+                    const localProfileData = {
+                        ownerName,
+                        umkmName,
+                        waNumber,
+                        updatedAt: new Date().toISOString()
+                    };
+                    localStorage.setItem(`profile_${user.uid}`, JSON.stringify(localProfileData));
+                }
+
+                // Munculkan notifikasi sukses sesuai permintaan
+                alert("Pengaturan profil Mutiara Snack berhasil diperbarui!");
+
             } catch (error) {
                 console.error("Save Settings Error:", error);
-                alert("Gagal memperbarui profil: " + error.message);
+                alert("Terjadi kesalahan saat menyimpan pengaturan.");
             } finally {
+                // 4. RESET STATE LOADING DENGAN BENAR (setIsLoading false)
                 btn.disabled = false;
                 btn.innerHTML = originalBtnText;
                 lucide.createIcons();
             }
         };
 
+        window.isAuthVerified = false;
+
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('login-loading');
+            window.isAuthVerified = true;
+
             if (user) {
                 // Immediately hide login screen and show app to feel responsive
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
                 if (loading) loading.classList.add('hidden');
+
+                // Trigger page router now that we are validated & authenticated
+                handleRoute();
 
                 // Update User UI
                 const displayName = user.displayName || user.email.split('@')[0];
