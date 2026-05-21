@@ -51,13 +51,30 @@
 
         /* Print Styles for Labels */
         @media print {
-            body * {
+            body.printing-report * {
                 visibility: hidden;
             }
-            #thermal-label, #thermal-label * {
+            body.printing-report #printable-report, body.printing-report #printable-report * {
                 visibility: visible;
             }
-            #thermal-label {
+            body.printing-report #printable-report {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                color: black;
+                padding: 1.5cm;
+                box-shadow: none !important;
+            }
+
+            body:not(.printing-report) * {
+                visibility: hidden;
+            }
+            body:not(.printing-report) #thermal-label, body:not(.printing-report) #thermal-label * {
+                visibility: visible;
+            }
+            body:not(.printing-report) #thermal-label {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -926,9 +943,14 @@
                             </div>
                             <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Laba Rugi</h2>
                             <p class="text-sm text-slate-400 mb-8 font-medium">Ringkasan pendapatan bruto, COGS, dan laba bersih Anda.</p>
-                            <button onclick="downloadSalesReport()" class="w-full h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2">
-                                <i data-lucide="download" class="h-4 w-4"></i> Download Laporan
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button onclick="handleDownloadPDF()" class="flex-1 h-12 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-md">
+                                    <i data-lucide="file-text" class="h-4 w-4"></i> Download PDF
+                                </button>
+                                <button onclick="downloadSalesReport()" class="flex-1 h-12 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="download" class="h-4 w-4"></i> format TXT
+                                </button>
+                            </div>
                         </div>
                         <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all duration-300">
                             <div class="flex justify-between items-start mb-12">
@@ -942,9 +964,14 @@
                             </div>
                             <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Arus Kas</h2>
                             <p class="text-sm text-slate-400 mb-8 font-medium">Semua transaksi mutasi kas disusun secara kronologis.</p>
-                            <button onclick="downloadCashflowCSV()" class="w-full h-12 bg-info text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-info/10">
-                                <i data-lucide="download" class="h-4 w-4"></i> Download CSV
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button onclick="handleDownloadCSV()" class="flex-1 h-12 bg-info text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-info/10 hover:bg-info/90 transition-colors">
+                                    <i data-lucide="download" class="h-4 w-4"></i> Download CSV
+                                </button>
+                                <button onclick="handleDownloadPDF()" class="flex-1 h-12 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="file-text" class="h-4 w-4"></i> Download PDF
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2147,6 +2174,188 @@
             const btn = document.getElementById('btn-save-tx');
             btn.innerText = 'Update Transaksi';
         }
+
+        function handleDownloadCSV() {
+            if (cashTransactions.length === 0) {
+                alert('Tidak ada data transaksi untuk diunduh.');
+                return;
+            }
+
+            const headers = ['Tanggal', 'Deskripsi', 'Kategori', 'Jenis', 'Nominal'];
+            const rows = cashTransactions.map(tx => [
+                tx.date,
+                `"${tx.desc.replace(/"/g, '""')}"`,
+                tx.category || '-',
+                tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                tx.amount
+            ]);
+
+            const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Laporan_Keuangan_Mutiara_Snack.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('Laporan Keuangan (CSV) berhasil diunduh.');
+        }
+        window.handleDownloadCSV = handleDownloadCSV;
+
+        function handleDownloadPDF() {
+            if (cashTransactions.length === 0) {
+                alert('Tidak ada data transaksi untuk dicetak.');
+                return;
+            }
+
+            // Calculate metrics
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const incomeByCat = {};
+            const expenseByCat = {};
+
+            cashTransactions.forEach(tx => {
+                const amt = tx.amount || 0;
+                if (tx.type === 'income') {
+                    totalIncome += amt;
+                    incomeByCat[tx.category] = (incomeByCat[tx.category] || 0) + amt;
+                } else {
+                    totalExpense += amt;
+                    expenseByCat[tx.category] = (expenseByCat[tx.category] || 0) + amt;
+                }
+            });
+
+            const netProfit = totalIncome - totalExpense;
+
+            // Simple formatting helpers
+            const formatRupiah = (val) => 'Rp ' + val.toLocaleString('id-ID');
+
+            // Generate HTML structure for printable-report container
+            let htmlContent = `
+                <div class="print-doc-container font-sans" style="color: #0f172a; line-height: 1.5; font-size: 13px;">
+                    <!-- Report Header -->
+                    <div style="border-b: 3px double #0f172a; padding-bottom: 20px; margin-bottom: 25px; text-align: center;">
+                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 2px;">Laporan Keuangan Resmi</span>
+                        <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 5px 0 2px 0;">MUTIARA SNACK</h1>
+                        <p style="font-size: 12px; color: #475569; margin: 0;">Solusi FinUMKM Pintar & Akurat • Sleman, D.I. Yogyakarta</p>
+                        <p style="font-size: 11px; color: #94a3b8; margin: 10px 0 0 0;">Dicetak pada: ${new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                    </div>
+
+                    <!-- Financial Summary Cards Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f8fafc; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Total Pemasukan</span>
+                            <div style="font-size: 18px; font-weight: 800; color: #047857; margin-top: 5px;">${formatRupiah(totalIncome)}</div>
+                        </div>
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f8fafc; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #ef4444; text-transform: uppercase; letter-spacing: 0.5px;">Total Pengeluaran</span>
+                            <div style="font-size: 18px; font-weight: 800; color: #b91c1c; margin-top: 5px;">${formatRupiah(totalExpense)}</div>
+                        </div>
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f0fdf4; text-align: center; border-color: #bbf7d0;">
+                            <span style="font-size: 10px; font-weight: bold; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px;">Laba / Rugi Bersih</span>
+                            <div style="font-size: 18px; font-weight: 800; color: ${netProfit >= 0 ? '#166534' : '#991b1b'}; margin-top: 5px;">${formatRupiah(netProfit)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Category Summary (Laba Rugi Breakdown) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+                        <div>
+                            <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-bottom: 10px; color: #047857;">RINCIAN PEMASUKAN</h3>
+                            <table style="width: 100%; font-size: 11px;">
+                                ${Object.keys(incomeByCat).length === 0 ? '<tr><td style="color: #64748b;">Tidak ada data pemasukan.</td></tr>' : 
+                                  Object.entries(incomeByCat).map(([cat, val]) => `
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 500; color: #334155;">${cat}</td>
+                                        <td style="padding: 4px 0; text-align: right; font-weight: bold; color: #0f172a;">${formatRupiah(val)}</td>
+                                    </tr>
+                                  `).join('')
+                                }
+                            </table>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #ef4444; padding-bottom: 5px; margin-bottom: 10px; color: #b91c1c;">RINCIAN PENGELUARAN</h3>
+                            <table style="width: 100%; font-size: 11px;">
+                                ${Object.keys(expenseByCat).length === 0 ? '<tr><td style="color: #64748b;">Tidak ada data pengeluaran.</td></tr>' : 
+                                  Object.entries(expenseByCat).map(([cat, val]) => `
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 500; color: #334155;">${cat}</td>
+                                        <td style="padding: 4px 0; text-align: right; font-weight: bold; color: #0f172a;">${formatRupiah(val)}</td>
+                                    </tr>
+                                  `).join('')
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Ledger Table -->
+                    <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #0f172a; padding-bottom: 5px; margin-bottom: 12px; text-transform: uppercase;">MUTASI KAS UTAMA</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Tanggal</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Keterangan / Deskripsi</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Kategori</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Tipe</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569; text-align: right;">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${cashTransactions.map((tx, idx) => `
+                                <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
+                                    <td style="padding: 8px; white-space: nowrap; color: #334155;">${tx.date}</td>
+                                    <td style="padding: 8px; font-weight: 500; color: #0f172a;">${tx.desc}</td>
+                                    <td style="padding: 8px; color: #475569;">${tx.category || '-'}</td>
+                                    <td style="padding: 8px; white-space: nowrap;">
+                                        <span style="font-weight: bold; color: ${tx.type === 'income' ? '#047857' : '#b91c1c'}">
+                                            ${tx.type === 'income' ? 'PEMASUKAN' : 'PENGELUARAN'}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 8px; text-align: right; font-weight: bold; color: #0f172a; white-space: nowrap;">
+                                        ${formatRupiah(tx.amount)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <!-- Statement Footer -->
+                    <div style="margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
+                        <div>
+                            <p style="font-size: 10px; color: #64748b; margin: 0 0 4px 0;">Mengetahui,</p>
+                            <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 40px 0 0 0;">Pemilik Mutiara Snack</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 10px; color: #64748b; margin: 0 0 4px 0;">Sistem Akuntansi Independen</p>
+                            <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 40px 0 0 0;">FinUMKM Engine</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Prepare non-intrusive container
+            let printDiv = document.getElementById('printable-report');
+            if (!printDiv) {
+                printDiv = document.createElement('div');
+                printDiv.id = 'printable-report';
+                document.body.appendChild(printDiv);
+            }
+            printDiv.innerHTML = htmlContent;
+
+            // Trigger window print cleanly
+            const previousTitle = document.title;
+            document.title = "Laporan_Keuangan_Mutiara_Snack";
+            document.body.classList.add('printing-report');
+
+            setTimeout(() => {
+                window.print();
+                document.body.classList.remove('printing-report');
+                document.title = previousTitle;
+                printDiv.innerHTML = '';
+            }, 100);
+        }
+        window.handleDownloadPDF = handleDownloadPDF;
 
         function downloadCashflowCSV() {
             if (cashTransactions.length === 0) {
