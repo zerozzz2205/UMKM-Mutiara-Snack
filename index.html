@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinUMKM - Solusi Keuangan UMKM</title>
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -610,12 +612,12 @@
                         <!-- Secondary Analysis Graphs -->
                         <div class="flex flex-col md:flex-row gap-6">
                             <div class="w-full md:w-3/5 bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
-                                <div class="flex justify-between items-center mb-8">
-                                    <div>
-                                        <h2 class="text-lg font-bold text-slate-900">Arus Kas Margin Keuntungan</h2>
+                                <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
+                                    <div class="space-y-1">
+                                        <h2 class="text-xl font-bold md:text-2xl text-slate-900">Arus Kas Margin Keuntungan</h2>
                                         <p class="text-xs text-slate-400 font-medium">Profitabilitas dari arus kas masuk dan pengeluaran Mutiara Snack</p>
                                     </div>
-                                    <div id="margin-percentage-display" class="text-4xl font-black transition-colors duration-500 text-success">0.0%</div>
+                                    <div id="margin-percentage-display" class="text-4xl font-black transition-colors duration-500 text-success self-start sm:self-center">0.0%</div>
                                 </div>
                                 <div class="h-64 flex items-center justify-center bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 relative overflow-hidden">
                                      <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#008080 1px, transparent 1px); background-size: 20px 20px;"></div>
