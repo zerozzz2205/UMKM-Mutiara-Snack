@@ -1207,6 +1207,10 @@
         // Logout function
         async function logout() {
             try {
+                if (!window.firebaseAuth) {
+                    alert("Layanan Firebase belum siap. Silakan coba sebentar lagi.");
+                    return;
+                }
                 const { auth, signOut } = window.firebaseAuth;
                 await signOut(auth);
                 location.reload();
@@ -1249,6 +1253,18 @@
             errorDiv.classList.add('hidden');
 
             try {
+                if (!window.firebaseAuth) {
+                    // Tunggu hingga 5 detik (50 * 100ms) untuk menginisialisasi window.firebaseAuth
+                    for (let i = 0; i < 50; i++) {
+                        if (window.firebaseAuth) break;
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+
+                if (!window.firebaseAuth) {
+                    throw new Error("Layanan keamanan Firebase sedang diinisialisasi. Silakan tunggu beberapa detik dan coba lagi.");
+                }
+
                 const { auth, signInWithPopup, signInWithRedirect, provider } = window.firebaseAuth;
                 
                 // Use a short delay to check if popup is blocked
