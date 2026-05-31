@@ -1171,6 +1171,25 @@
     </div>
 
     <script>
+        // Inisialisasi fallback aman window.firebaseAuth untuk mencegah error destructuring di komponen frontend
+        window.firebaseAuth = window.firebaseAuth || {
+            auth: {
+                currentUser: null,
+                onAuthStateChanged: (cb) => {
+                    if (typeof cb === 'function') {
+                        // Triger asinkronus null user
+                        const timer = setTimeout(() => cb(null), 100);
+                        return () => clearTimeout(timer);
+                    }
+                    return () => {};
+                }
+            },
+            signOut: async () => { console.warn("Firebase Auth belum siap."); },
+            signInWithPopup: async () => { alert("Layanan login sedang bersiap, silakan tunggu beberapa detik..."); },
+            signInWithRedirect: async () => { alert("Layanan login sedang bersiap, silakan tunggu beberapa detik..."); },
+            provider: null
+        };
+
         // Initialize Lucide Icons
         lucide.createIcons();
 

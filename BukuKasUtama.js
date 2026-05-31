@@ -56,6 +56,17 @@ export default function BukuKasUtama() {
     // Save/Add New Transaction to Supabase
     const handleAddTransaction = async (e) => {
         e.preventDefault();
+
+        // Validasi autentikasi Firebase sebelum memproses pengiriman data
+        const firebaseAuthObj = window.firebaseAuth;
+        const auth = firebaseAuthObj?.auth;
+        const currentUser = auth?.currentUser;
+
+        if (!currentUser) {
+            alert('Akses ditolak: Silakan login/masuk log terlebih dahulu untuk melakukan transaksi!');
+            return;
+        }
+
         if (!formDesc.trim() || !formAmount || !formCategory) {
             alert('Semua baris input wajib diisi.');
             return;
@@ -72,7 +83,8 @@ export default function BukuKasUtama() {
                 deskripsi: formDesc.trim(),
                 kategori: formCategory,
                 jenis: formType, // 'pemasukan' or 'pengeluaran'
-                nominal: nominalValue
+                nominal: nominalValue,
+                user_id: currentUser.uid // mengaitkan transaksi dengan ID pengguna login jika diinginkan
             };
 
             const { data, error: insertError } = await supabase
