@@ -3052,9 +3052,9 @@
         const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
         // Supabase Credentials Initialized via Client CDN SDK
-        const supabaseUrl = "https://fukwqedhzhwbxkojlxnk.supabase.co";
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const SUPABASE_URL = "https://fukwqedhzhwbxkojlxnk.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_D_3wtiuGC04rdVQEYKMF1A_MBcjcA-p";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const firebaseConfig = {
             apiKey: FIREBASE_API_KEY,
