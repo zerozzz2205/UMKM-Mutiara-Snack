@@ -959,20 +959,6 @@
                                 </div>
                             </div>
 
-                            <div class="pt-6 border-t border-slate-100 space-y-4">
-                                <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">Isolasi Kunci Eksternal (API Security)</h3>
-                                <div class="grid md:grid-cols-2 gap-8">
-                                    <div class="space-y-2">
-                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Firebase API Key (Load fallback jika kosong)</label>
-                                        <input type="password" id="settings-firebase-key" placeholder="AIzaSy... (Mengamankan credential dari resiko leak GitHub)" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
-                                    </div>
-                                    <div class="space-y-2">
-                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Gemini API Key (Untuk Mapping & Insight AI)</label>
-                                        <input type="password" id="settings-gemini-key" placeholder="AIzaSy... (Aman terisolasi di localStorage browser Anda)" class="w-full px-5 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 animate-fade-in">
                                 <button onclick="logout()" class="w-full md:w-auto h-12 px-6 border-2 border-danger text-danger font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-danger/5 flex items-center justify-center gap-2 transition-all">
                                     <i data-lucide="log-out" class="h-4 w-4"></i> Keluar Akun
@@ -3063,10 +3049,16 @@
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.12.0";
+        import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-        // Dynamic Loading of External Credentials with Secure LocalStorage Storage & Fallback Preventers
-        const FIREBASE_API_KEY = localStorage.getItem('FIN_FIREBASE_KEY') || "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ";
-        const GEMINI_API_KEY = localStorage.getItem('FIN_GEMINI_KEY') || "";
+        // Dynamic Loading of External Credentials via Vite Environment Variables
+        const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ";
+        const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+
+        // Supabase Credentials
+        const supabaseUrl = "https://fukwqedhzhwbxkojlxnk.supabase.co";
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         const firebaseConfig = {
             apiKey: FIREBASE_API_KEY,
@@ -3085,14 +3077,15 @@
         // Share with global window so vanilla JS can use it
         window.firebaseDB = db;
         window.firebaseAuth = { auth, signOut, signInWithPopup, signInWithRedirect, provider };
+        window.supabase = supabase;
 
         // --- GEMINI MAPPING ENGINE & LIVE INSIGHTS INTEGRATION ---
 
-        // Fungsi mapping transaksi dengan asisten AI Gemini dan langsung menyimpannya ke Firestore
+        // Fungsi mapping transaksi dengan asisten AI Gemini dan langsung menyimpannya ke Supabase & Firestore
         window.prosesTransaksiDenganAI = async (textInput) => {
-            const geminiKey = localStorage.getItem('FIN_GEMINI_KEY') || GEMINI_API_KEY;
+            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_API_KEY;
             if (!geminiKey) {
-                alert("Kunci API Gemini tidak ditemukan! Silakan masukkan kunci API Gemini Anda di menu Pengaturan (Isolasi Kunci Eksternal).");
+                alert("Kunci API Gemini tidak ditemukan! Pastikan VITE_GEMINI_API_KEY terkonfigurasi di env variable.");
                 return null;
             }
 
@@ -3111,28 +3104,26 @@
 
                 const todayStr = new Date().toISOString().split('T')[0];
 
-                const prompt = `Anda adalah database-mapping engine untuk aplikasi FinUMKM Mutiara Snack. Tugas Anda adalah mengekstrak data transaksi keuangan dari chat/teks pengguna ke dalam format JSON database Firestore.
+                const prompt = `Anda adalah database-mapping engine untuk aplikasi FinUMKM Mutiara Snack. Tugas Anda adalah mengekstrak data transaksi keuangan dari chat/teks pengguna ke dalam format JSON database Supabase.
 
 Kategori yang didukung: 'Penjualan', 'Lain-lain', 'Bahan Baku', 'Operasional', 'Gaji', 'Pemasaran'.
 Kategori Default: 'Lain-lain'.
-Tipe/Jenis ('type') yang didukung: 'income' (untuk pemasukan) atau 'expense' (untuk pengeluaran).
+Tipe/Jenis ('jenis') yang didukung: 'pemasukan' (untuk pemasukan/income) atau 'pengeluaran' (untuk pengeluaran/expense).
 
 JSON output harus menggunakan field berikut saja:
-- userId (string): ID pengguna saat ini, yang adalah "${currentUser.uid}"
-- type (string): WAJIB salah satu: 'income' atau 'expense'
-- category (string): Kategori transaksi yang sesuai.
-- desc (string): Ringkasan deskripsi transaksi yang ringkas dan jelas.
-- amount (number): Angka mutlak/nominal transaksi (dalam rupiah, bersihkan dari Rp atau titik ribuan).
-- date (string): Tanggal transaksi dengan format YYYY-MM-DD. Jika tidak disebutkan di teks, gunakan hari ini yang adalah "${todayStr}".
+- user_id (string): ID pengguna saat ini, yang adalah "${currentUser.uid}"
+- jenis (string): WAJIB salah satu: 'pemasukan' atau 'pengeluaran'
+- kategori (string): Kategori transaksi yang sesuai.
+- deskripsi (string): Ringkasan deskripsi transaksi yang ringkas dan jelas.
+- nominal (number): Angka mutlak/nominal transaksi (dalam rupiah, bersihkan dari Rp atau titik ribuan).
 
 Jika input tidak valid/tidak berisi laporan transaksi, format sebagai:
 {
-  "userId": "${currentUser.uid}",
-  "type": "expense",
-  "category": "Lain-lain",
-  "desc": "Input tidak valid",
-  "amount": 0,
-  "date": "${todayStr}"
+  "user_id": "${currentUser.uid}",
+  "jenis": "pengeluaran",
+  "kategori": "Lain-lain",
+  "deskripsi": "Input tidak valid",
+  "nominal": 0
 }
 
 Teks pengguna: "${textInput}"
@@ -3149,26 +3140,41 @@ Hasilkan respon berupa JSON murni objek tunggal.`;
                     throw new Error("Gagal menyusun format data dari AI secara valid. Silakan coba kembali.");
                 }
 
-                // Setelah JSON didapat, langsung simpan ke koleksi "transactions" Firebase
-                const docRef = await addDoc(collection(db, "transactions"), transactionData);
+                // 1. Simpan ke database Supabase sesuai instruksi user
+                const { data, error } = await supabase.from('transactions').insert([ transactionData ]).select();
+                if (error) {
+                    console.error("Kesalahan menyimpan di Supabase:", error);
+                } else {
+                    console.log("Transaksi tersimpan di Supabase:", data);
+                }
+
+                // 2. Simpan ke Firestore untuk integrasi ganda yang utuh
+                const docRef = await addDoc(collection(db, "transactions"), {
+                    userId: currentUser.uid,
+                    type: transactionData.jenis === 'pemasukan' ? 'income' : 'expense',
+                    category: transactionData.kategori,
+                    desc: transactionData.deskripsi,
+                    amount: transactionData.nominal,
+                    date: todayStr
+                });
                 console.log("Transaksi tersimpan di Firestore dengan ID:", docRef.id);
 
                 // Sinkronisasi lokal agar list transaksi real-time terupdate responsif
                 const newTxLocal = {
-                    id: Date.now(),
+                    id: (data && data[0] && data[0].id) || Date.now(),
                     firestoreId: docRef.id,
-                    type: transactionData.type,
-                    category: transactionData.category,
-                    desc: transactionData.desc,
-                    amount: transactionData.amount,
-                    date: transactionData.date
+                    type: transactionData.jenis === 'pemasukan' ? 'income' : 'expense',
+                    category: transactionData.kategori,
+                    desc: transactionData.deskripsi,
+                    amount: transactionData.nominal,
+                    date: todayStr
                 };
 
                 cashTransactions.unshift(newTxLocal);
                 saveState();
                 renderInitialData();
 
-                return transactionData;
+                return newTxLocal;
             } catch (error) {
                 console.error("Kesalahan prosesTransaksiDenganAI:", error);
                 alert("Gagal memproses transaksi AI: " + error.message);
@@ -3214,9 +3220,9 @@ Hasilkan respon berupa JSON murni objek tunggal.`;
             const txt = document.getElementById('ai-insight-text');
             if (!btn || !txt) return;
 
-            const geminiKey = localStorage.getItem('FIN_GEMINI_KEY') || GEMINI_API_KEY;
+            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_API_KEY;
             if (!geminiKey) {
-                alert("Kunci API Gemini tidak ditemukan! Atur kunci API Gemini Anda di menu Pengaturan.");
+                alert("Kunci API Gemini tidak ditemukan! Pastikan VITE_GEMINI_API_KEY terkonfigurasi di env variable.");
                 return;
             }
 
@@ -3339,7 +3345,7 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
             }
         });
 
-        // --- Save Settings Logic with Security Credentials ---
+        // --- Save Settings Logic without Security Credentials ---
         window.saveProfileSettings = async () => {
             const btn = document.getElementById('btn-save-settings');
             if (!btn) return;
@@ -3349,19 +3355,12 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
             const umkmName = document.getElementById('settings-umkm-name').value;
             const waNumber = document.getElementById('settings-wa-number').value;
 
-            const firebaseKey = document.getElementById('settings-firebase-key')?.value || '';
-            const geminiKey = document.getElementById('settings-gemini-key')?.value || '';
-
             // 1. SIMULASI LOADING STATE
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses...`;
             lucide.createIcons();
 
             try {
-                // Simpan kunci eksternal dengan aman di localStorage
-                localStorage.setItem('FIN_FIREBASE_KEY', firebaseKey);
-                localStorage.setItem('FIN_GEMINI_KEY', geminiKey);
-
                 // 2. SIMULASI LOCAL STATE RESPONSIVE (Await 1 detik)
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -3430,14 +3429,8 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
                 const settingsUmkmName = document.getElementById('settings-umkm-name');
                 const settingsWaNumber = document.getElementById('settings-wa-number');
 
-                // Security credential fields
-                const settingsFirebaseKey = document.getElementById('settings-firebase-key');
-                const settingsGeminiKey = document.getElementById('settings-gemini-key');
-
                 if (settingsEmail) settingsEmail.value = user.email;
                 if (settingsOwnerName) settingsOwnerName.value = user.displayName || "";
-                if (settingsFirebaseKey) settingsFirebaseKey.value = localStorage.getItem('FIN_FIREBASE_KEY') || "";
-                if (settingsGeminiKey) settingsGeminiKey.value = localStorage.getItem('FIN_GEMINI_KEY') || "";
                 
                 // Fetch extra details from Firestore if they exist
                 try {
@@ -3460,7 +3453,7 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
                 } else {
                     userPhoto.classList.add('hidden');
                     avatarPlaceholder.classList.remove('hidden');
-                    avatarPlaceholder.text = user.email.charAt(0).toUpperCase();
+                    avatarPlaceholder.innerText = user.email.charAt(0).toUpperCase();
                 }
 
                 // Sync user to Firestore in background
