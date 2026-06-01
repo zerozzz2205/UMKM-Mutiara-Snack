@@ -17,6 +17,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -1823,49 +1825,44 @@
             document.getElementById('btn-save-tx').innerText = 'Simpan Transaksi';
         }
 
-        function saveTransaction() {
+        async function saveTransaction() {
             const desc = document.getElementById('tx-desc').value;
             const amount = parseInt(document.getElementById('tx-amount').value);
             const date = document.getElementById('tx-date').value;
             const category = document.getElementById('tx-category').value;
+            const type = document.getElementById('tx-type-hidden')?.value || currentModalMode || 'income';
 
             if (!desc || isNaN(amount) || amount <= 0) {
                 alert('Data transaksi tidak valid!');
                 return;
             }
 
-            if (editingTxId) {
-                // Update existing
-                const index = cashTransactions.findIndex(tx => tx.id === editingTxId);
-                if (index !== -1) {
-                    cashTransactions[index] = {
-                        ...cashTransactions[index],
-                        category,
-                        desc,
-                        amount,
-                        date
-                    };
-                }
-                editingTxId = null;
-            } else {
-                // Create new
-                const newTx = {
-                    id: Date.now(),
-                    type: currentModalMode,
-                    category,
-                    desc,
-                    amount,
-                    date
-                };
-                cashTransactions.unshift(newTx);
+            const auth = window.firebaseAuth?.auth;
+            if (!auth || !auth.currentUser) {
+                alert('Anda harus login terlebih dahulu!');
+                return;
             }
 
-            saveState();
-            renderInitialData();
-            closeTransactionModal();
+            const transactionData = {
+                user_id: auth.currentUser.uid,
+                deskripsi: desc,
+                kategori: category,
+                jenis: type === 'income' ? 'pemasukan' : 'pengeluaran',
+                nominal: amount,
+                created_at: new Date(date).toISOString()
+            };
+
+            const supabase = window.supabase;
+            const { data, error } = await supabase.from('transactions').insert([ transactionData ]);
             
-            alert('Transaksi berhasil disimpan!');
+            if (error) {
+                alert('Gagal save ke Supabase: ' + error.message);
+            } else {
+                alert('Data BERHASIL ke-save di Supabase!');
+                location.reload();
+            }
         }
+        window.saveTransaction = saveTransaction;
 
         let sidebarTxMode = 'income';
 
@@ -3049,16 +3046,15 @@
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.12.0";
-        import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
         // Dynamic Loading of External Credentials via Vite Environment Variables
         const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ";
         const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
-        // Supabase Credentials
+        // Supabase Credentials Initialized via Client CDN SDK
         const supabaseUrl = "https://fukwqedhzhwbxkojlxnk.supabase.co";
         const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         const firebaseConfig = {
             apiKey: FIREBASE_API_KEY,
@@ -3081,7 +3077,7 @@
 
         // --- GEMINI MAPPING ENGINE & LIVE INSIGHTS INTEGRATION ---
 
-        // Fungsi mapping transaksi dengan asisten AI Gemini dan langsung menyimpannya ke Supabase & Firestore
+        // Fungsi mapping transaksi dengan asisten AI Gemini dan langsung menyimpannya ke Supabase
         window.prosesTransaksiDenganAI = async (textInput) => {
             const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_API_KEY;
             if (!geminiKey) {
@@ -3108,7 +3104,7 @@
 
 Kategori yang didukung: 'Penjualan', 'Lain-lain', 'Bahan Baku', 'Operasional', 'Gaji', 'Pemasaran'.
 Kategori Default: 'Lain-lain'.
-Tipe/Jenis ('jenis') yang didukung: 'pemasukan' (untuk pemasukan/income) atau 'pengeluaran' (untuk pengeluaran/expense).
+Tipe/Jenis ('jenis') yang didukung: 'pemasukan' (untuk pemasukan) atau 'pengeluaran' (untuk pengeluaran).
 
 JSON output harus menggunakan field berikut saja:
 - user_id (string): ID pengguna saat ini, yang adalah "${currentUser.uid}"
@@ -3140,29 +3136,17 @@ Hasilkan respon berupa JSON murni objek tunggal.`;
                     throw new Error("Gagal menyusun format data dari AI secara valid. Silakan coba kembali.");
                 }
 
-                // 1. Simpan ke database Supabase sesuai instruksi user
-                const { data, error } = await supabase.from('transactions').insert([ transactionData ]).select();
+                // 1. Eksekusi penyimpanan data ke Supabase sesuai instruksi user
+                const { data, error } = await supabase.from('transactions').insert([ transactionData ]);
                 if (error) {
                     console.error("Kesalahan menyimpan di Supabase:", error);
                 } else {
                     console.log("Transaksi tersimpan di Supabase:", data);
                 }
 
-                // 2. Simpan ke Firestore untuk integrasi ganda yang utuh
-                const docRef = await addDoc(collection(db, "transactions"), {
-                    userId: currentUser.uid,
-                    type: transactionData.jenis === 'pemasukan' ? 'income' : 'expense',
-                    category: transactionData.kategori,
-                    desc: transactionData.deskripsi,
-                    amount: transactionData.nominal,
-                    date: todayStr
-                });
-                console.log("Transaksi tersimpan di Firestore dengan ID:", docRef.id);
-
                 // Sinkronisasi lokal agar list transaksi real-time terupdate responsif
                 const newTxLocal = {
                     id: (data && data[0] && data[0].id) || Date.now(),
-                    firestoreId: docRef.id,
                     type: transactionData.jenis === 'pemasukan' ? 'income' : 'expense',
                     category: transactionData.kategori,
                     desc: transactionData.deskripsi,
