@@ -878,7 +878,7 @@
                         <p class="text-slate-500">Unduh data keuangan Anda dalam berbagai format profesional.</p>
                     </div>
 
-                    <div class="grid gap-6 md:grid-cols-2">
+                    <div class="grid gap-6 md:grid-cols-3">
                         <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all duration-300">
                             <div class="flex justify-between items-start mb-12">
                                 <div class="h-14 w-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
@@ -918,6 +918,24 @@
                                 </button>
                                 <button onclick="handleDownloadPDF()" class="flex-1 h-12 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors">
                                     <i data-lucide="file-text" class="h-4 w-4"></i> Download PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 group hover:shadow-lg transition-all duration-300 p-8 shadow-sm">
+                            <div class="flex justify-between items-start mb-12">
+                                <div class="h-14 w-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+                                    <i data-lucide="calendar" class="h-7 w-7"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">PDF</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">Bulanan</span>
+                                </div>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Laporan Bulanan</h2>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Ringkasan serta mutasi kas khusus di rentang bulan berjalan.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button onclick="handleDownloadMonthlyPDF()" class="flex-1 h-12 bg-emerald-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors shadow-md">
+                                    <i data-lucide="file-text" class="h-4 w-4"></i> Unduh Laporan Bulanan
                                 </button>
                             </div>
                         </div>
@@ -2258,6 +2276,201 @@
         }
         window.handleDownloadPDF = handleDownloadPDF;
 
+        function handleDownloadMonthlyPDF() {
+            if (cashTransactions.length === 0) {
+                alert('Tidak ada data transaksi untuk dicetak.');
+                return;
+            }
+
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const monthsIndo = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            const currentMonthName = monthsIndo[currentMonth];
+            const periodeStr = `${currentMonthName} ${currentYear}`;
+
+            // Filter transactions based on current month with robust date or createdAt fallback
+            const filteredTxs = cashTransactions.filter(tx => {
+                let txDateStr = tx.date;
+                if (!txDateStr && tx.createdAt) {
+                    txDateStr = tx.createdAt.split('T')[0];
+                }
+                if (!txDateStr) return false;
+                
+                // Get strictly the YYYY-MM-DD portion
+                txDateStr = txDateStr.substring(0, 10);
+                const parts = txDateStr.split('-');
+                if (parts.length === 3) {
+                    const txYear = parseInt(parts[0], 10);
+                    const txMonth = parseInt(parts[1], 10) - 1; // 0-indexed month
+                    return txMonth === currentMonth && txYear === currentYear;
+                }
+                return false;
+            });
+
+            if (filteredTxs.length === 0) {
+                alert(`Tidak ditemukan data transaksi untuk periode berjalan (${periodeStr}).`);
+                return;
+            }
+
+            // Sort chronologically ascending
+            const sortedTxs = [...filteredTxs].sort((a, b) => {
+                const dateA = a.date || (a.createdAt ? a.createdAt.split('T')[0] : '');
+                const dateB = b.date || (b.createdAt ? b.createdAt.split('T')[0] : '');
+                return dateA.localeCompare(dateB);
+            });
+
+            // Calculate metrics
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const incomeByCat = {};
+            const expenseByCat = {};
+
+            sortedTxs.forEach(tx => {
+                const amt = tx.amount || 0;
+                if (tx.type === 'income') {
+                    totalIncome += amt;
+                    incomeByCat[tx.category || 'Penjualan'] = (incomeByCat[tx.category || 'Penjualan'] || 0) + amt;
+                } else if (tx.type === 'expense') {
+                    totalExpense += amt;
+                    expenseByCat[tx.category || 'Lain-lain'] = (expenseByCat[tx.category || 'Lain-lain'] || 0) + amt;
+                }
+            });
+
+            const netProfit = totalIncome - totalExpense;
+            const formatRupiah = (val) => 'Rp ' + val.toLocaleString('id-ID');
+
+            // Generate HTML structure for printable-report container
+            let htmlContent = `
+                <div class="print-doc-container font-sans" style="color: #0f172a; line-height: 1.5; font-size: 13px;">
+                    <!-- Report Header -->
+                    <div style="border-b: 3px double #0f172a; padding-bottom: 20px; margin-bottom: 25px; text-align: center;">
+                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 2px;">Laporan Keuangan Bulanan Resmi</span>
+                        <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 5px 0 2px 0;">MUTIARA SNACK</h1>
+                        <p style="font-size: 12px; color: #475569; margin: 0;">Solusi FinUMKM Pintar & Akurat • Sleman, D.I. Yogyakarta</p>
+                        <p style="font-size: 13px; font-weight: bold; color: #047857; margin: 8px 0 0 0; text-transform: uppercase;">PERIODE: ${periodeStr}</p>
+                        <p style="font-size: 10px; color: #94a3b8; margin: 6px 0 0 0;">Dicetak pada: ${new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                    </div>
+
+                    <!-- Financial Summary Cards Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f8fafc; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Pemasukan Bulanan</span>
+                            <div style="font-size: 18px; font-weight: 800; color: #047857; margin-top: 5px;">${formatRupiah(totalIncome)}</div>
+                        </div>
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f8fafc; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #ef4444; text-transform: uppercase; letter-spacing: 0.5px;">Pengeluaran Bulanan</span>
+                            <div style="font-size: 18px; font-weight: 800; color: #b91c1c; margin-top: 5px;">${formatRupiah(totalExpense)}</div>
+                        </div>
+                        <div style="border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; background-color: #f0fdf4; text-align: center; border-color: #bbf7d0;">
+                            <span style="font-size: 10px; font-weight: bold; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px;">Laba Bersih Bulanan</span>
+                            <div style="font-size: 18px; font-weight: 800; color: ${netProfit >= 0 ? '#166534' : '#991b1b'}; margin-top: 5px;">${formatRupiah(netProfit)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Category Summary (Laba Rugi Breakdown) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+                        <div>
+                            <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-bottom: 10px; color: #047857;">RINCIAN PEMASUKAN BULANAN</h3>
+                            <table style="width: 100%; font-size: 11px;">
+                                ${Object.keys(incomeByCat).length === 0 ? '<tr><td style="color: #64748b;">Tidak ada data pemasukan bulan ini.</td></tr>' : 
+                                  Object.entries(incomeByCat).map(([cat, val]) => `
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 500; color: #334155;">${cat}</td>
+                                        <td style="padding: 4px 0; text-align: right; font-weight: bold; color: #0f172a;">${formatRupiah(val)}</td>
+                                    </tr>
+                                  `).join('')
+                                }
+                            </table>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #ef4444; padding-bottom: 5px; margin-bottom: 10px; color: #b91c1c;">RINCIAN PENGELUARAN BULANAN</h3>
+                            <table style="width: 100%; font-size: 11px;">
+                                ${Object.keys(expenseByCat).length === 0 ? '<tr><td style="color: #64748b;">Tidak ada data pengeluaran bulan ini.</td></tr>' : 
+                                  Object.entries(expenseByCat).map(([cat, val]) => `
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 500; color: #334155;">${cat}</td>
+                                        <td style="padding: 4px 0; text-align: right; font-weight: bold; color: #0f172a;">${formatRupiah(val)}</td>
+                                    </tr>
+                                  `).join('')
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Ledger Table -->
+                    <h3 style="font-size: 13px; font-weight: 800; border-bottom: 2px solid #0f172a; padding-bottom: 5px; margin-bottom: 12px; text-transform: uppercase;">MUTASI KAS BULANAN</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Tanggal</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Keterangan / Deskripsi</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Kategori</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569;">Tipe</th>
+                                <th style="padding: 8px; font-weight: bold; color: #475569; text-align: right;">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sortedTxs.map((tx, idx) => `
+                                <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
+                                    <td style="padding: 8px; white-space: nowrap; color: #334155;">${tx.date || (tx.createdAt ? tx.createdAt.split('T')[0] : '-')}</td>
+                                    <td style="padding: 8px; font-weight: 500; color: #0f172a;">${tx.desc}</td>
+                                    <td style="padding: 8px; color: #475569;">${tx.category || '-'}</td>
+                                    <td style="padding: 8px; white-space: nowrap;">
+                                        <span style="font-weight: bold; color: ${tx.type === 'income' ? '#047857' : '#b91c1c'}">
+                                            ${tx.type === 'income' ? 'PEMASUKAN' : 'PENGELUARAN'}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 8px; text-align: right; font-weight: bold; color: #0f172a; white-space: nowrap;">
+                                        ${formatRupiah(tx.amount)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <!-- Statement Footer -->
+                    <div style="margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
+                        <div>
+                            <p style="font-size: 10px; color: #64748b; margin: 0 0 4px 0;">Mengetahui,</p>
+                            <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 40px 0 0 0;">Pemilik Mutiara Snack</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 10px; color: #64748b; margin: 0 0 4px 0;">Sistem Akuntansi Independen</p>
+                            <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 40px 0 0 0;">FinUMKM Engine</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Prepare non-intrusive container
+            let printDiv = document.getElementById('printable-report');
+            if (!printDiv) {
+                printDiv = document.createElement('div');
+                printDiv.id = 'printable-report';
+                document.body.appendChild(printDiv);
+            }
+            printDiv.innerHTML = htmlContent;
+
+            // Trigger window print cleanly
+            const previousTitle = document.title;
+            const pdfFileName = `Laporan_Bulanan_Mutiara_Snack_${currentMonthName}_${currentYear}`;
+            document.title = pdfFileName.replace(/\s+/g, '_');
+            document.body.classList.add('printing-report');
+
+            setTimeout(() => {
+                window.print();
+                document.body.classList.remove('printing-report');
+                document.title = previousTitle;
+                printDiv.innerHTML = '';
+            }, 100);
+        }
+        window.handleDownloadMonthlyPDF = handleDownloadMonthlyPDF;
+
         function downloadCashflowCSV() {
             if (cashTransactions.length === 0) {
                 alert('Tidak ada data transaksi untuk diunduh.');
@@ -2503,12 +2716,27 @@
                 });
 
                 const labels = Object.keys(expenseCategories);
-                const data = Object.values(expenseCategories);
-                const colors = ['#008080', '#3b82f6', '#f59e0b', '#e11d48', '#8b5cf6', '#64748b'];
+                const data = Object.values(expenseCategories).map(val => parseFloat(val) || 0);
+                
+                const labelColorMap = {
+                    'Bahan Baku': '#10b981',
+                    'Gaji': '#3b82f6',
+                    'Gaji / Upah': '#3b82f6',
+                    'Operasional': '#f59e0b',
+                    'Pemasaran': '#e11d48',
+                    'Lain-lain': '#8b5cf6'
+                };
+                
+                const chartColors = labels.map((label, index) => {
+                    if (labelColorMap[label]) return labelColorMap[label];
+                    const defaultColors = ['#008080', '#3b82f6', '#f59e0b', '#e11d48', '#8b5cf6', '#64748b'];
+                    return defaultColors[index % defaultColors.length];
+                });
 
                 if (costChart) {
                     costChart.data.labels = labels;
                     costChart.data.datasets[0].data = data;
+                    costChart.data.datasets[0].backgroundColor = chartColors;
                     costChart.update();
                 } else {
                     costChart = new Chart(ctx2.getContext('2d'), {
@@ -2517,7 +2745,7 @@
                             labels: labels,
                             datasets: [{
                                 data: data,
-                                backgroundColor: colors.slice(0, labels.length),
+                                backgroundColor: chartColors,
                                 borderWidth: 0,
                                 hoverOffset: 10
                             }]
@@ -2552,7 +2780,7 @@
                         item.className = 'flex items-center justify-between text-xs';
                         item.innerHTML = `
                             <div class="flex items-center gap-2">
-                                <div class="h-2 w-2 rounded-full" style="background-color: ${colors[i % colors.length]}"></div>
+                                <div class="h-2 w-2 rounded-full" style="background-color: ${chartColors[i] || '#cbd5e1'}"></div>
                                 <span class="text-slate-400 font-medium tracking-tight">${label}</span>
                             </div>
                             <span class="font-bold">${percent}%</span>
