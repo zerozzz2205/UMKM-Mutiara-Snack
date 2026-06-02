@@ -3092,6 +3092,32 @@
             }
         });
 
+        // Helper function to sync user profiles to Firestore
+        async function syncUserProfile(user, customName = null) {
+            try {
+                // Determine display name
+                const displayName = customName || user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+                
+                // Read creation time safely
+                const createdAtTime = user.metadata && user.metadata.creationTime 
+                    ? new Date(user.metadata.creationTime).toISOString() 
+                    : new Date().toISOString();
+                    
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    email: user.email || "",
+                    displayName: displayName,
+                    photoURL: user.photoURL || "",
+                    createdAt: createdAtTime
+                }, { merge: true });
+
+                const nameEl = document.getElementById('user-name');
+                if (nameEl) nameEl.innerText = displayName;
+            } catch (e) {
+                console.warn("Firestore sync failed:", e);
+            }
+        }
+
         // Handle Auth Action (Login/Register)
         window.handleAuthAction = async () => {
             const email = document.getElementById('auth-email').value;
@@ -3114,8 +3140,13 @@
                 if (window.isRegisterMode) {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     if (name) {
-                        await updateProfile(userCredential.user, { displayName: name });
+                        try {
+                            await updateProfile(userCredential.user, { displayName: name });
+                        } catch (profileErr) {
+                            console.warn("Could not update auth profile displayName:", profileErr);
+                        }
                     }
+                    await syncUserProfile(userCredential.user, name);
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
@@ -3589,17 +3620,7 @@
                 }
 
                 // Sync user to Firestore in background
-                try {
-                    await setDoc(doc(db, "users", user.uid), {
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName || displayName,
-                        photoURL: user.photoURL || "",
-                        lastLogin: new Date().toISOString()
-                    }, { merge: true });
-                } catch (e) {
-                    console.warn("Firestore sync failed (might be permissions):", e);
-                }
+                await syncUserProfile(user);
                 
             } else {
                 if (unsubscribeTransactions) {
