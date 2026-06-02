@@ -27,6 +27,38 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "type", "category", "desc", "amount", "date"]
+    },
+    "Inventory": {
+      "title": "Inventory Item",
+      "description": "An inventory product catalog item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the owner" },
+        "name": { "type": "string" },
+        "barcode": { "type": "string" },
+        "hpp": { "type": "number" },
+        "stock": { "type": "number" },
+        "shelfLife": { "type": "number" },
+        "price": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "hpp", "stock", "shelfLife", "price"]
+    },
+    "Production": {
+      "title": "Production Batch",
+      "description": "A production history batch log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the owner" },
+        "batchCode": { "type": "string" },
+        "sku": { "type": "string" },
+        "productName": { "type": "string" },
+        "qty": { "type": "number" },
+        "expiryDate": { "type": "string" },
+        "hpp": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "batchCode", "sku", "productName", "qty", "expiryDate", "hpp", "timestamp"]
     }
   },
   "firestore": {
@@ -37,6 +69,14 @@
     "transactions/{transactionId}": {
       "schema": "Transaction",
       "description": "Global transactions (filtered by userId)"
+    },
+    "inventory/{skuCode}": {
+      "schema": "Inventory",
+      "description": "Product catalog and stock quantities"
+    },
+    "production/{batchId}": {
+      "schema": "Production",
+      "description": "History of production batches"
     }
   }
 }

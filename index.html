@@ -2880,10 +2880,10 @@
                                 <button onclick="showLabelByBatch('${batch.batchCode}')" class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Print Label">
                                     <i data-lucide="printer" class="h-3.5 w-3.5"></i>
                                 </button>
-                                <button onclick="editProductionBatch(${index})" class="p-2 hover:bg-info/10 rounded-lg text-info transition-colors" title="Edit Batch">
+                                <button onclick="editProductionBatch('${batch.id}')" class="p-2 hover:bg-info/10 rounded-lg text-info transition-colors" title="Edit Batch">
                                     <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
                                 </button>
-                                <button onclick="deleteProductionBatch(${index})" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Delete Batch">
+                                <button onclick="deleteProductionBatch('${batch.id}')" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Delete Batch">
                                     <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
                                 </button>
                             </div>
@@ -3192,9 +3192,266 @@
             }
         };
 
+        // --- Firestore Backed Inventory Management ---
+        window.saveInventoryItem = async () => {
+            const name = document.getElementById('inv-name').value;
+            const skuInput = document.getElementById('inv-sku');
+            const sku = skuInput.value;
+            const barcode = document.getElementById('inv-barcode').value;
+            const hpp = parseInt(document.getElementById('inv-hpp').value) || 0;
+            const stock = parseInt(document.getElementById('inv-stock').value) || 0;
+
+            if (!name || !sku) {
+                alert('Nama Produk dan SKU wajib diisi!');
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-inv-text');
+            const originalText = btn ? btn.innerText : 'Simpan';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Menyimpan...';
+            }
+
+            try {
+                const payload = {
+                    userId: auth.currentUser.uid,
+                    name: name,
+                    barcode: barcode,
+                    hpp: hpp,
+                    stock: stock,
+                    shelfLife: productCatalogue[sku]?.shelfLife || 30,
+                    price: hpp * 1.5,
+                    createdAt: productCatalogue[sku]?.createdAt || new Date().toISOString()
+                };
+
+                await setDoc(doc(db, 'inventory', sku), payload);
+                closeInventoryModal();
+                alert(editingInventorySku ? 'Data item berhasil diperbarui!' : 'Item stok berhasil ditambahkan!');
+            } catch (error) {
+                handleFirestoreError(error, editingInventorySku ? OperationType.UPDATE : OperationType.CREATE, `inventory/${sku}`);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            }
+        };
+
+        window.deleteInventoryItem = async (sku) => {
+            if (confirm(`Apakah Anda yakin ingin menghapus "${productCatalogue[sku].name}"? Semua data stok akan hilang.`)) {
+                try {
+                    await deleteDoc(doc(db, 'inventory', sku));
+                    alert('Item berhasil dihapus.');
+                } catch (error) {
+                    handleFirestoreError(error, OperationType.DELETE, `inventory/${sku}`);
+                }
+            }
+        };
+
+        window.registerNewSKU = async () => {
+            const name = document.getElementById('new-sku-name').value;
+            const hpp = parseInt(document.getElementById('new-sku-hpp').value);
+            const life = parseInt(document.getElementById('new-sku-life').value);
+
+            if (!name || isNaN(hpp) || isNaN(life)) {
+                alert('Oops! Lengkapi semua data produk baru.');
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="registerNewSKU()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses...`;
+                lucide.createIcons();
+            }
+
+            try {
+                const skuCode = 'SKU-' + (Object.keys(productCatalogue).length + Math.floor(Math.random() * 900) + 101);
+                const payload = {
+                    userId: auth.currentUser.uid,
+                    name,
+                    hpp,
+                    shelfLife: life,
+                    stock: 0,
+                    barcode: '899' + Math.floor(Math.random() * 1000000000),
+                    price: hpp * 1.5,
+                    createdAt: new Date().toISOString()
+                };
+
+                await setDoc(doc(db, 'inventory', skuCode), payload);
+                alert(`Sukses! ${name} telah terdaftar.`);
+                document.getElementById('new-sku-name').value = '';
+                document.getElementById('new-sku-hpp').value = '';
+                document.getElementById('new-sku-life').value = '';
+                toggleSKUManager();
+            } catch (error) {
+                handleFirestoreError(error, OperationType.CREATE, 'inventory');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    lucide.createIcons();
+                }
+            }
+        };
+
+        // --- Firestore Backed Production Management ---
+        window.submitProduction = async () => {
+            const select = document.getElementById('prod-product-select');
+            const qtyInput = document.getElementById('prod-qty-input');
+            const edPreview = document.getElementById('ed-preview');
+            const btn = document.querySelector('button[onclick="submitProduction()"]');
+
+            if (!select.value || !qtyInput.value || parseInt(qtyInput.value) <= 0) {
+                alert('Pilih produk dan masukkan jumlah produksi yang valid!');
+                return;
+            }
+
+            const sku = select.value;
+            const product = productCatalogue[sku];
+            if (!product) {
+                alert('Produk tidak ditemukan!');
+                return;
+            }
+            const qty = parseInt(qtyInput.value);
+            const batchCode = activeBatchCode;
+            const expiryDate = edPreview.innerText;
+
+            const originalBtnContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Processing...`;
+            lucide.createIcons();
+
+            try {
+                await setDoc(doc(db, 'inventory', sku), {
+                    stock: (product.stock || 0) + qty
+                }, { merge: true });
+
+                await addDoc(collection(db, 'production'), {
+                    userId: auth.currentUser.uid,
+                    batchCode,
+                    sku,
+                    productName: product.name,
+                    qty,
+                    expiryDate,
+                    hpp: product.hpp || 0,
+                    timestamp: new Date().toISOString()
+                });
+
+                btn.innerHTML = `<i data-lucide="check-circle" class="h-4 w-4"></i> Stock Updated!`;
+                lucide.createIcons();
+
+                showLabelPreview(product.name, batchCode, expiryDate, product.barcode);
+
+                qtyInput.value = '';
+                updateBatchCode();
+                updateProductionCalc();
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnContent;
+                    lucide.createIcons();
+                }, 2000);
+
+            } catch (error) {
+                handleFirestoreError(error, OperationType.WRITE, 'production');
+            }
+        };
+
+        window.editProductionBatch = (id) => {
+            editingProductionIndex = id;
+            const batch = productionHistory.find(b => b.id === id);
+            if (!batch) return;
+
+            document.getElementById('edit-prod-batch-code').innerText = batch.batchCode;
+            document.getElementById('edit-prod-name').value = batch.productName;
+            document.getElementById('edit-prod-hpp').value = 'Rp' + (batch.hpp || 0).toLocaleString();
+            document.getElementById('edit-prod-qty').value = batch.qty;
+
+            document.getElementById('production-modal').classList.remove('hidden');
+        };
+
+        window.saveProductionEdit = async () => {
+            const newQty = parseInt(document.getElementById('edit-prod-qty').value);
+            if (isNaN(newQty) || newQty < 0) {
+                alert('Masukkan jumlah produksi yang valid.');
+                return;
+            }
+
+            const batch = productionHistory.find(b => b.id === editingProductionIndex);
+            if (!batch) return;
+
+            const oldQty = batch.qty;
+            const sku = batch.sku;
+            const product = productCatalogue[sku];
+
+            const btn = document.querySelector('button[onclick="saveProductionEdit()"]');
+            const originalText = btn ? btn.innerText : 'Simpan';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Menyimpan...';
+            }
+
+            try {
+                if (product) {
+                    await setDoc(doc(db, 'inventory', sku), {
+                        stock: Math.max(0, (product.stock || 0) - oldQty + newQty)
+                    }, { merge: true });
+                }
+
+                await setDoc(doc(db, 'production', batch.id), {
+                    qty: newQty
+                }, { merge: true });
+
+                closeProductionModal();
+                alert('Batch produksi berhasil diperbarui!');
+            } catch (error) {
+                handleFirestoreError(error, OperationType.UPDATE, `production/${batch.id}`);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            }
+        };
+
+        window.deleteProductionBatch = async (id) => {
+            const batch = productionHistory.find(b => b.id === id);
+            if (!batch) return;
+
+            if (confirm(`Hapus riwayat produksi batch ${batch.batchCode}? Perhatian: Stok produk akan dikurangi sesuai jumlah batch ini.`)) {
+                const sku = batch.sku;
+                const product = productCatalogue[sku];
+                try {
+                    if (product) {
+                        await setDoc(doc(db, 'inventory', sku), {
+                            stock: Math.max(0, (product.stock || 0) - batch.qty)
+                        }, { merge: true });
+                    }
+
+                    await deleteDoc(doc(db, 'production', batch.id));
+                    alert('Batch produksi berhasil dihapus.');
+                } catch (error) {
+                    handleFirestoreError(error, OperationType.DELETE, `production/${batch.id}`);
+                }
+            }
+        };
+
+        window.showLabelByBatch = (batchCode) => {
+            const batch = productionHistory.find(b => b.batchCode === batchCode);
+            if (batch) {
+                const product = productCatalogue[batch.sku] || Object.values(productCatalogue).find(p => p.name === batch.productName);
+                showLabelPreview(batch.productName, batch.batchCode, batch.expiryDate, product ? product.barcode : null);
+            }
+        };
+
         window.isAuthVerified = false;
 
         let unsubscribeTransactions = null;
+        let unsubscribeInventory = null;
+        let unsubscribeProduction = null;
 
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('login-loading');
@@ -3227,6 +3484,68 @@
                     updateAnalysisUI();
                 }, (error) => {
                     handleFirestoreError(error, OperationType.LIST, pathForOnSnapshot);
+                });
+
+                // Register real-time Snapshot of inventory
+                const pathForInventory = 'inventory';
+                const qInv = query(collection(db, pathForInventory), where('userId', '==', user.uid));
+                if (unsubscribeInventory) unsubscribeInventory();
+                unsubscribeInventory = onSnapshot(qInv, async (snapshot) => {
+                    // Seed defaults if empty
+                    if (snapshot.empty) {
+                        try {
+                            for (const sku of Object.keys(DEFAULT_CATALOGUE)) {
+                                const defItem = DEFAULT_CATALOGUE[sku];
+                                await setDoc(doc(db, 'inventory', sku), {
+                                    userId: user.uid,
+                                    name: defItem.name,
+                                    barcode: defItem.barcode || '',
+                                    hpp: defItem.hpp || 0,
+                                    stock: defItem.stock || 0,
+                                    shelfLife: defItem.shelfLife || 30,
+                                    price: defItem.price || (defItem.hpp || 0) * 1.5,
+                                    createdAt: new Date().toISOString()
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to seed default catalog:", e);
+                        }
+                        return;
+                    }
+
+                    const tempCatalogue = {};
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        tempCatalogue[doc.id] = {
+                            name: data.name,
+                            barcode: data.barcode,
+                            hpp: parseInt(data.hpp) || 0,
+                            stock: parseInt(data.stock) || 0,
+                            shelfLife: parseInt(data.shelfLife) || 30,
+                            price: parseFloat(data.price) || (parseInt(data.hpp) || 0) * 1.5,
+                            createdAt: data.createdAt
+                        };
+                    });
+                    productCatalogue = tempCatalogue;
+                    renderInitialData();
+                }, (error) => {
+                    handleFirestoreError(error, OperationType.LIST, pathForInventory);
+                });
+
+                // Register real-time Snapshot of production
+                const pathForProduction = 'production';
+                const qProd = query(collection(db, pathForProduction), where('userId', '==', user.uid));
+                if (unsubscribeProduction) unsubscribeProduction();
+                unsubscribeProduction = onSnapshot(qProd, (snapshot) => {
+                    const tempProdHistory = [];
+                    snapshot.forEach(doc => {
+                        tempProdHistory.push({ id: doc.id, ...doc.data() });
+                    });
+                    tempProdHistory.sort((a, b) => (b.timestamp || "").localeCompare(a.timestamp || ""));
+                    productionHistory = tempProdHistory;
+                    renderInitialData();
+                }, (error) => {
+                    handleFirestoreError(error, OperationType.LIST, pathForProduction);
                 });
 
                 // Trigger page router now that we are validated & authenticated
@@ -3287,7 +3606,17 @@
                     unsubscribeTransactions();
                     unsubscribeTransactions = null;
                 }
+                if (unsubscribeInventory) {
+                    unsubscribeInventory();
+                    unsubscribeInventory = null;
+                }
+                if (unsubscribeProduction) {
+                    unsubscribeProduction();
+                    unsubscribeProduction = null;
+                }
                 cashTransactions = [];
+                productCatalogue = {};
+                productionHistory = [];
                 // Show login, hide app
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');

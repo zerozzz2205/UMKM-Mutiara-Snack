@@ -34,6 +34,34 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
+    // Inventory Validation
+    function isValidInventory(data) {
+      return data.keys().hasAll(['userId', 'name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price', 'createdAt']) &&
+             data.keys().size() == 8 &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 200 &&
+             data.barcode is string && data.barcode.size() <= 100 &&
+             data.hpp is number && data.hpp >= 0 &&
+             data.stock is number && data.stock >= 0 &&
+             data.shelfLife is number && data.shelfLife >= 0 &&
+             data.price is number && data.price >= 0 &&
+             data.createdAt is string;
+    }
+
+    // Production Validation
+    function isValidProduction(data) {
+      return data.keys().hasAll(['userId', 'batchCode', 'sku', 'productName', 'qty', 'expiryDate', 'hpp', 'timestamp']) &&
+             data.keys().size() == 8 &&
+             data.userId == request.auth.uid &&
+             data.batchCode is string && data.batchCode.size() <= 100 &&
+             data.sku is string && data.sku.size() <= 100 &&
+             data.productName is string && data.productName.size() <= 200 &&
+             data.qty is number && data.qty >= 0 &&
+             data.expiryDate is string && data.expiryDate.size() <= 100 &&
+             data.hpp is number && data.hpp >= 0 &&
+             data.timestamp is string;
+    }
+
     // Default Deny
     match /{document=**} {
       allow read, write: if false;
@@ -57,6 +85,28 @@ service cloud.firestore {
         incoming().diff(existing()).affectedKeys().hasOnly(['category', 'desc', 'amount', 'date'])
       );
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Inventory Collection
+    match /inventory/{skuCode} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidInventory(incoming()) && isValidId(skuCode);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidInventory(incoming()) && isValidId(skuCode) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price'])
+      );
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(skuCode);
+    }
+
+    // Production Collection
+    match /production/{batchId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidProduction(incoming()) && isValidId(batchId);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidProduction(incoming()) && isValidId(batchId) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['qty', 'expiryDate', 'hpp'])
+      );
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(batchId);
     }
   }
 }
