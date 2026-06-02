@@ -307,6 +307,9 @@
                                 <i data-lucide="dollar-sign" class="h-4 w-4 text-info"></i>
                             </div>
                             <p id="stat-margin" class="text-xl md:text-2xl font-black text-slate-900">Rp0</p>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <span class="text-[10px] font-bold bg-info/10 text-info px-1.5 py-0.5 rounded-lg active-timeframe-label">Data Akumulasi</span>
+                            </div>
                         </div>
                         <div class="relative overflow-hidden bg-primary rounded-3xl p-6 shadow-xl shadow-primary/20 text-white transition-all hover:-translate-y-1">
                             <div class="flex justify-between items-start mb-4">
@@ -1835,20 +1838,39 @@
             updateDashboardStats();
             updateCharts();
         }
+        window.toggleDashboardTimeframe = toggleDashboardTimeframe;
 
         function updateDashboardStats() {
             const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
 
-            // Filter transactions based on timeframe
+            // Filter transactions based on timeframe with robust date or createdAt fallback
             const filteredTxs = cashTransactions.filter(tx => {
-                const txDate = new Date(tx.date);
+                let txDateStr = tx.date;
+                if (!txDateStr && tx.createdAt) {
+                    txDateStr = tx.createdAt.split('T')[0];
+                }
+                if (!txDateStr) return false;
+                
+                // Get strictly the YYYY-MM-DD portion
+                txDateStr = txDateStr.substring(0, 10);
+
                 if (dashboardTimeframe === 'harian') {
-                    return tx.date === todayStr;
+                    return txDateStr === todayStr;
                 } else {
-                    return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+                    const parts = txDateStr.split('-');
+                    if (parts.length === 3) {
+                        const txYear = parseInt(parts[0], 10);
+                        const txMonth = parseInt(parts[1], 10) - 1; // 0-indexed month
+                        return txMonth === currentMonth && txYear === currentYear;
+                    }
+                    return false;
                 }
             });
 
@@ -1857,24 +1879,41 @@
             const prodTodayEl = document.getElementById('stat-production-today');
             if (prodTodayEl) prodTodayEl.innerText = prodToday + ' Batch';
 
-            // Calculate Totals
+            // Calculate Totals safely
             let totalIncome = 0;
             let totalExpense = 0;
 
             filteredTxs.forEach(tx => {
-                if (tx.type === 'income') totalIncome += tx.amount;
-                else totalExpense += tx.amount;
+                if (tx.type === 'income') {
+                    totalIncome += (tx.amount || 0);
+                } else if (tx.type === 'expense') {
+                    totalExpense += (tx.amount || 0);
+                }
             });
             
             const omzetEl = document.getElementById('stat-omzet');
-            if (omzetEl) omzetEl.innerText = 'Rp' + totalIncome.toLocaleString();
+            if (omzetEl) omzetEl.innerText = 'Rp' + totalIncome.toLocaleString('id-ID');
 
             const biayaEl = document.getElementById('stat-biaya');
-            if (biayaEl) biayaEl.innerText = 'Rp' + totalExpense.toLocaleString();
+            if (biayaEl) biayaEl.innerText = 'Rp' + totalExpense.toLocaleString('id-ID');
 
             const marginEl = document.getElementById('stat-margin');
             if (marginEl) {
-                marginEl.innerText = 'Rp' + (totalIncome - totalExpense).toLocaleString();
+                // Dynamically calculated: totalIncome - totalExpense
+                const diff = totalIncome - totalExpense;
+                const isLoss = diff < 0;
+                // Add minus sign for deficit explicitly so it's very clear
+                const prefix = isLoss ? '-' : '';
+                marginEl.innerText = prefix + 'Rp' + Math.abs(diff).toLocaleString('id-ID');
+                
+                // Color formatting based on profit/loss
+                if (isLoss) {
+                    marginEl.className = "text-xl md:text-2xl font-black text-rose-600";
+                } else if (diff > 0) {
+                    marginEl.className = "text-xl md:text-2xl font-black text-emerald-600";
+                } else {
+                    marginEl.className = "text-xl md:text-2xl font-black text-slate-900";
+                }
             }
 
             // Update inventory count
@@ -1882,7 +1921,7 @@
             if (invEl) {
                 let totalStock = 0;
                 Object.values(productCatalogue).forEach(p => totalStock += (p.stock || 0));
-                invEl.innerText = totalStock.toLocaleString() + ' Unit';
+                invEl.innerText = totalStock.toLocaleString('id-ID') + ' Unit';
             }
         }
 
@@ -1919,7 +1958,11 @@
 
             filtered.forEach(tx => {
                 const isIncome = tx.type === 'income';
-                const dateObj = new Date(tx.date);
+                let txDateStr = tx.date;
+                if (!txDateStr && tx.createdAt) {
+                    txDateStr = tx.createdAt.split('T')[0];
+                }
+                const dateObj = new Date(txDateStr || new Date());
                 const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 
                 // 1. Render Table Row (Desktop)
@@ -2321,50 +2364,58 @@
                         const dLabel = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
                         labels.push(dLabel);
 
-                        let dayInc = 0;
-                        let dayExp = 0;
-                        cashTransactions.forEach(tx => {
-                            if (tx.date === dStr) {
-                                if (tx.type === 'income') dayInc += tx.amount || 0;
-                                else dayExp += tx.amount || 0;
-                            }
-                        });
-                        incomeData.push(dayInc / 1000000); // Scale to Juta
-                        expenseData.push(dayExp / 1000000);
-                    }
-                } else {
-                    // Monthly View - dynamic based on actual months up to the current month in live Firestore db
-                    const monthsCount = 6;
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                    const now = new Date();
-                    const currentMonth = now.getMonth();
-                    const currentYear = now.getFullYear();
-                    
-                    // Generate last 6 months (including current month) dynamically
-                    for (let i = monthsCount - 1; i >= 0; i--) {
-                        const date = new Date(currentYear, currentMonth - i, 1);
-                        const mIndex = date.getMonth();
-                        const yIndex = date.getFullYear();
-                        
-                        labels.push(`${monthNames[mIndex]} ${yIndex}`);
-                        
-                        let monthInc = 0;
-                        let monthExp = 0;
-                        
-                        cashTransactions.forEach(tx => {
-                            if (!tx.date) return;
-                            const d = new Date(tx.date);
-                            if (d.getMonth() === mIndex && d.getFullYear() === yIndex) {
-                                if (tx.type === 'income') {
-                                    monthInc += tx.amount || 0;
-                                } else if (tx.type === 'expense') {
-                                    monthExp += tx.amount || 0;
-                                }
-                            }
-                        });
-                        
-                        incomeData.push(monthInc / 1000000); // Scale to Juta
-                        expenseData.push(monthExp / 1000000);
+                         let dayInc = 0;
+                         let dayExp = 0;
+                         cashTransactions.forEach(tx => {
+                             let txDateStr = tx.date;
+                             if (!txDateStr && tx.createdAt) {
+                                 txDateStr = tx.createdAt.split('T')[0];
+                             }
+                             if (txDateStr === dStr) {
+                                 if (tx.type === 'income') dayInc += tx.amount || 0;
+                                 else dayExp += tx.amount || 0;
+                             }
+                         });
+                         incomeData.push(dayInc / 1000000); // Scale to Juta
+                         expenseData.push(dayExp / 1000000);
+                     }
+                 } else {
+                     // Monthly View - dynamic based on actual months up to the current month in live Firestore db
+                     const monthsCount = 6;
+                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                     const now = new Date();
+                     const currentMonth = now.getMonth();
+                     const currentYear = now.getFullYear();
+                     
+                     // Generate last 6 months (including current month) dynamically
+                     for (let i = monthsCount - 1; i >= 0; i--) {
+                         const date = new Date(currentYear, currentMonth - i, 1);
+                         const mIndex = date.getMonth();
+                         const yIndex = date.getFullYear();
+                         
+                         labels.push(`${monthNames[mIndex]} ${yIndex}`);
+                         
+                         let monthInc = 0;
+                         let monthExp = 0;
+                         
+                         cashTransactions.forEach(tx => {
+                             let txDateStr = tx.date;
+                             if (!txDateStr && tx.createdAt) {
+                                 txDateStr = tx.createdAt.split('T')[0];
+                             }
+                             if (!txDateStr) return;
+                             const d = new Date(txDateStr);
+                             if (d.getMonth() === mIndex && d.getFullYear() === yIndex) {
+                                 if (tx.type === 'income') {
+                                     monthInc += tx.amount || 0;
+                                 } else if (tx.type === 'expense') {
+                                     monthExp += tx.amount || 0;
+                                 }
+                             }
+                         });
+                         
+                         incomeData.push(monthInc / 1000000); // Scale to Juta
+                         expenseData.push(monthExp / 1000000);
                     }
                 }
 
@@ -2430,9 +2481,17 @@
 
                 cashTransactions.forEach(tx => {
                     if (tx.type === 'expense') {
-                        const txDate = new Date(tx.date);
+                        let txDateStr = tx.date;
+                        if (!txDateStr && tx.createdAt) {
+                            txDateStr = tx.createdAt.split('T')[0];
+                        }
+                        if (!txDateStr) return;
+                        
+                        txDateStr = txDateStr.substring(0, 10);
+                        const txDate = new Date(txDateStr);
+                        
                         if (dashboardTimeframe === 'harian') {
-                            if (tx.date !== todayStr) return;
+                            if (txDateStr !== todayStr) return;
                         } else {
                             if (txDate.getMonth() !== currentMonth || txDate.getFullYear() !== currentYear) return;
                         }
@@ -2679,10 +2738,17 @@
             const currentYear = now.getFullYear();
             
             cashTransactions.forEach(tx => {
-                if (!tx.date) return;
-                const txDate = new Date(tx.date);
+                let txDateStr = tx.date;
+                if (!txDateStr && tx.createdAt) {
+                    txDateStr = tx.createdAt.split('T')[0];
+                }
+                if (!txDateStr) return;
+                
+                txDateStr = txDateStr.substring(0, 10);
+                const txDate = new Date(txDateStr);
+                
                 if (analysisTimeframe === 'harian') {
-                    if (tx.date === todayStr) {
+                    if (txDateStr === todayStr) {
                         if (tx.type === 'income') {
                             periodIncome += tx.amount || 0;
                         } else if (tx.type === 'expense') {
