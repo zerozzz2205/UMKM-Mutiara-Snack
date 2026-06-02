@@ -1405,13 +1405,7 @@
         let editingInventorySku = null;
         let editingProductionIndex = null;
         
-        const DEFAULT_TRANSACTIONS = [
-            { id: 1, type: 'income', category: 'Penjualan', desc: 'Penjualan Kopi Susu (15 Cup)', amount: 375000, date: '2026-04-29' },
-            { id: 2, type: 'expense', category: 'Bahan Baku', desc: 'Beli Susu UHT 1 Karton', amount: 210000, date: '2026-04-28' },
-            { id: 3, type: 'expense', category: 'Operasional', desc: 'Bayar Listrik Toko', amount: 450000, date: '2026-04-28' }
-        ];
-        
-        let cashTransactions = JSON.parse(localStorage.getItem('cashTransactions')) || DEFAULT_TRANSACTIONS;
+        let cashTransactions = [];
         let selectedCategories = [];
 
         function toggleCategoryFilterDropdown() {
@@ -1561,7 +1555,6 @@
         function saveState() {
             localStorage.setItem('productCatalogue', JSON.stringify(productCatalogue));
             localStorage.setItem('productionHistory', JSON.stringify(productionHistory));
-            localStorage.setItem('cashTransactions', JSON.stringify(cashTransactions));
         }
 
         // Production Module Logic
@@ -1771,49 +1764,7 @@
             document.getElementById('btn-save-tx').innerText = 'Simpan Transaksi';
         }
 
-        function saveTransaction() {
-            const desc = document.getElementById('tx-desc').value;
-            const amount = parseInt(document.getElementById('tx-amount').value);
-            const date = document.getElementById('tx-date').value;
-            const category = document.getElementById('tx-category').value;
-
-            if (!desc || isNaN(amount) || amount <= 0) {
-                alert('Data transaksi tidak valid!');
-                return;
-            }
-
-            if (editingTxId) {
-                // Update existing
-                const index = cashTransactions.findIndex(tx => tx.id === editingTxId);
-                if (index !== -1) {
-                    cashTransactions[index] = {
-                        ...cashTransactions[index],
-                        category,
-                        desc,
-                        amount,
-                        date
-                    };
-                }
-                editingTxId = null;
-            } else {
-                // Create new
-                const newTx = {
-                    id: Date.now(),
-                    type: currentModalMode,
-                    category,
-                    desc,
-                    amount,
-                    date
-                };
-                cashTransactions.unshift(newTx);
-            }
-
-            saveState();
-            renderInitialData();
-            closeTransactionModal();
-            
-            alert('Transaksi berhasil disimpan!');
-        }
+        // saveTransaction handles saving via Firestore now, implemented inside the module section below.
 
         let sidebarTxMode = 'income';
 
@@ -1850,36 +1801,7 @@
             }
         }
 
-        function saveSidebarTransaction() {
-            const desc = document.getElementById('sidebar-tx-desc').value;
-            const amountInput = document.getElementById('sidebar-tx-amount');
-            const amount = parseInt(amountInput.value);
-            const category = document.getElementById('sidebar-tx-category').value;
-            const date = new Date().toISOString().split('T')[0];
-
-            if (!desc || isNaN(amount) || amount <= 0) {
-                alert('Oops! Masukkan deskripsi dan nominal yang valid.');
-                return;
-            }
-
-            const newTx = {
-                id: Date.now(),
-                type: sidebarTxMode,
-                category,
-                desc,
-                amount,
-                date
-            };
-
-            cashTransactions.unshift(newTx);
-            saveState();
-            renderInitialData();
-            
-            document.getElementById('sidebar-tx-desc').value = '';
-            amountInput.value = '';
-            
-            alert(`${sidebarTxMode === 'income' ? 'Pemasukan' : 'Pengeluaran'} berhasil dicatat!`);
-        }
+        // saveSidebarTransaction handles saving via Firestore now, implemented inside the module section below.
 
         // --- Dashboard Timeframe Logic ---
         let dashboardTimeframe = 'bulanan';
@@ -2021,10 +1943,10 @@
                     </td>
                     <td class="px-6 py-5">
                         <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editTransaction(${tx.id})" class="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors" title="Edit">
+                            <button onclick="editTransaction('${tx.id}')" class="p-2 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors" title="Edit">
                                 <i data-lucide="edit-3" class="h-4 w-4"></i>
                             </button>
-                            <button onclick="deleteTransaction(${tx.id})" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Hapus">
+                            <button onclick="deleteTransaction('${tx.id}')" class="p-2 hover:bg-danger/10 rounded-lg text-danger transition-colors" title="Hapus">
                                 <i data-lucide="trash-2" class="h-4 w-4"></i>
                             </button>
                         </div>
@@ -2055,10 +1977,10 @@
                             ${isIncome ? '+' : '-'} Rp${tx.amount.toLocaleString()}
                         </p>
                         <div class="flex gap-2">
-                             <button onclick="editTransaction(${tx.id})" class="h-9 w-9 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                             <button onclick="editTransaction('${tx.id}')" class="h-9 w-9 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
                                 <i data-lucide="edit-3" class="h-4 w-4"></i>
                             </button>
-                            <button onclick="deleteTransaction(${tx.id})" class="h-9 w-9 bg-danger/5 rounded-xl flex items-center justify-center text-danger">
+                            <button onclick="deleteTransaction('${tx.id}')" class="h-9 w-9 bg-danger/5 rounded-xl flex items-center justify-center text-danger">
                                 <i data-lucide="trash-2" class="h-4 w-4"></i>
                             </button>
                         </div>
@@ -2086,16 +2008,7 @@
         // --- Transaction Actions ---
         let editingTxId = null;
 
-        function deleteTransaction(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
-                cashTransactions = cashTransactions.filter(tx => tx.id !== id);
-                saveState();
-                renderCashBook();
-                updateDashboardStats();
-                updateCharts();
-                alert('Transaksi berhasil dihapus.');
-            }
-        }
+        // deleteTransaction handles deletion via Firestore now, implemented inside the module section below.
 
         function editTransaction(id) {
             const tx = cashTransactions.find(t => t.id === id);
@@ -2995,7 +2908,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ",
@@ -3014,6 +2927,158 @@
         // Share with global window so vanilla JS can use it
         window.firebaseDB = db;
         window.firebaseAuth = { auth, signOut, signInWithPopup, signInWithRedirect, provider };
+
+        const OperationType = {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+            GET: 'get',
+            WRITE: 'write',
+        };
+
+        function handleFirestoreError(error, operationType, path) {
+            const errInfo = {
+                error: error instanceof Error ? error.message : String(error),
+                authInfo: {
+                    userId: auth.currentUser?.uid,
+                    email: auth.currentUser?.email,
+                    emailVerified: auth.currentUser?.emailVerified,
+                    isAnonymous: auth.currentUser?.isAnonymous,
+                    tenantId: auth.currentUser?.tenantId,
+                    providerInfo: auth.currentUser?.providerData?.map(provider => ({
+                        providerId: provider.providerId,
+                        email: provider.email,
+                    })) || []
+                },
+                operationType,
+                path
+            };
+            console.error('Firestore Error: ', JSON.stringify(errInfo));
+            throw new Error(JSON.stringify(errInfo));
+        }
+
+        async function testConnection() {
+            try {
+                await getDocFromServer(doc(db, 'test', 'connection'));
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('the client is offline')) {
+                    console.error("Please check your Firebase configuration.");
+                }
+            }
+        }
+        testConnection();
+
+        // Implement Firestore-backed save & delete functions
+        window.saveTransaction = async () => {
+            const desc = document.getElementById('tx-desc').value;
+            const amountInput = document.getElementById('tx-amount');
+            const amount = parseInt(amountInput.value);
+            const date = document.getElementById('tx-date').value;
+            const category = document.getElementById('tx-category').value;
+
+            if (!desc || isNaN(amount) || amount <= 0) {
+                alert('Data transaksi tidak valid!');
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-tx');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Menyimpan...';
+
+            try {
+                if (editingTxId) {
+                    const existingTx = cashTransactions.find(tx => tx.id === editingTxId);
+                    const payload = {
+                        userId: auth.currentUser.uid,
+                        type: existingTx ? existingTx.type : currentModalMode,
+                        category,
+                        desc,
+                        amount,
+                        date,
+                        createdAt: existingTx ? existingTx.createdAt : new Date().toISOString()
+                    };
+                    await setDoc(doc(db, 'transactions', editingTxId), payload);
+                    editingTxId = null;
+                } else {
+                    const payload = {
+                        userId: auth.currentUser.uid,
+                        type: currentModalMode,
+                        category,
+                        desc,
+                        amount,
+                        date,
+                        createdAt: new Date().toISOString()
+                    };
+                    await addDoc(collection(db, 'transactions'), payload);
+                }
+                closeTransactionModal();
+                alert('Transaksi berhasil disimpan!');
+            } catch (error) {
+                handleFirestoreError(error, editingTxId ? OperationType.UPDATE : OperationType.CREATE, 'transactions');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        };
+
+        window.saveSidebarTransaction = async () => {
+            const desc = document.getElementById('sidebar-tx-desc').value;
+            const amountInput = document.getElementById('sidebar-tx-amount');
+            const amount = parseInt(amountInput.value);
+            const category = document.getElementById('sidebar-tx-category').value;
+            const date = new Date().toISOString().split('T')[0];
+
+            if (!desc || isNaN(amount) || amount <= 0) {
+                alert('Oops! Masukkan deskripsi dan nominal yang valid.');
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="saveSidebarTransaction()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i> Memproses...`;
+                lucide.createIcons();
+            }
+
+            try {
+                const payload = {
+                    userId: auth.currentUser.uid,
+                    type: sidebarTxMode,
+                    category,
+                    desc,
+                    amount,
+                    date,
+                    createdAt: new Date().toISOString()
+                };
+                await addDoc(collection(db, 'transactions'), payload);
+                
+                document.getElementById('sidebar-tx-desc').value = '';
+                amountInput.value = '';
+                alert(`${sidebarTxMode === 'income' ? 'Pemasukan' : 'Pengeluaran'} berhasil dicatat!`);
+            } catch (error) {
+                handleFirestoreError(error, OperationType.CREATE, 'transactions');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    lucide.createIcons();
+                }
+            }
+        };
+
+        window.deleteTransaction = async (id) => {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                try {
+                    await deleteDoc(doc(db, 'transactions', id));
+                    alert('Transaksi berhasil dihapus.');
+                } catch (error) {
+                    handleFirestoreError(error, OperationType.DELETE, `transactions/${id}`);
+                }
+            }
+        };
 
         // Handle Redirect Result on load
         getRedirectResult(auth).catch(error => {
@@ -3127,6 +3192,8 @@
 
         window.isAuthVerified = false;
 
+        let unsubscribeTransactions = null;
+
         onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('login-loading');
             window.isAuthVerified = true;
@@ -3136,6 +3203,29 @@
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
                 if (loading) loading.classList.add('hidden');
+
+                // Register real-time Snapshot of transactions
+                const pathForOnSnapshot = 'transactions';
+                const q = query(collection(db, pathForOnSnapshot), where('userId', '==', user.uid));
+                if (unsubscribeTransactions) unsubscribeTransactions();
+                unsubscribeTransactions = onSnapshot(q, (snapshot) => {
+                    const txs = [];
+                    snapshot.forEach(doc => {
+                        txs.push({ id: doc.id, ...doc.data() });
+                    });
+                    txs.sort((a, b) => {
+                        const dateCompare = (b.date || "").localeCompare(a.date || "");
+                        if (dateCompare !== 0) return dateCompare;
+                        return (b.createdAt || "").localeCompare(a.createdAt || "");
+                    });
+                    cashTransactions = txs;
+                    renderCashBook();
+                    updateDashboardStats();
+                    updateCharts();
+                    updateAnalysisUI();
+                }, (error) => {
+                    handleFirestoreError(error, OperationType.LIST, pathForOnSnapshot);
+                });
 
                 // Trigger page router now that we are validated & authenticated
                 handleRoute();
@@ -3191,6 +3281,11 @@
                 }
                 
             } else {
+                if (unsubscribeTransactions) {
+                    unsubscribeTransactions();
+                    unsubscribeTransactions = null;
+                }
+                cashTransactions = [];
                 // Show login, hide app
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
