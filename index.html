@@ -2609,26 +2609,28 @@
         }
 
         function updateAnalysisUI() {
-            // Find current month (Mei 2026) totals from Buku Kas Utama
+            // Find current month totals from Buku Kas Utama (dynamically calculated from Firestore transactions)
             let currentMonthIncome = 0;
             let currentMonthExpense = 0;
             
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
             cashTransactions.forEach(tx => {
+                if (!tx.date) return;
                 const d = new Date(tx.date);
-                if (d.getMonth() === 4 && d.getFullYear() === 2026) { // Mei 2026
+                if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
                     if (tx.type === 'income') {
-                        currentMonthIncome += tx.amount;
+                        currentMonthIncome += tx.amount || 0;
                     } else if (tx.type === 'expense') {
-                        currentMonthExpense += tx.amount;
+                        currentMonthExpense += tx.amount || 0;
                     }
                 }
             });
-            
-            // Fallback for demo if no transactions exist yet for May 2026
-            if (currentMonthIncome === 0) currentMonthIncome = 45200000; 
-            if (currentMonthExpense === 0) currentMonthExpense = 24500000;
 
             const targetBEP = currentMonthExpense;
+
             const completionPercent = targetBEP > 0 ? Math.round((currentMonthIncome / targetBEP) * 100) : 0;
             
             // Update UI elements
