@@ -1435,6 +1435,20 @@
 
         // Router logic
         function handleRoute() {
+            // Check if URL is Google Search Console verification bypass
+            const pathLower = window.location.pathname.toLowerCase();
+            const hrefLower = window.location.href.toLowerCase();
+            const isGoogleOrHtmlBypass = pathLower.includes('google') || 
+                                         hrefLower.includes('google') || 
+                                         (pathLower.endsWith('.html') && !pathLower.endsWith('index.html'));
+
+            if (isGoogleOrHtmlBypass) {
+                // Bypass authentication for Google Search Console files/URLs
+                document.getElementById('login-screen')?.classList.add('hidden');
+                document.getElementById('main-app')?.classList.remove('hidden');
+                return;
+            }
+
             // Check auth state using the global flag set by onAuthStateChanged
             const firebaseAuthObj = window.firebaseAuth;
             if (!window.isAuthVerified || !firebaseAuthObj || !firebaseAuthObj.auth || !firebaseAuthObj.auth.currentUser) {
@@ -4264,9 +4278,23 @@
                 cashTransactions = [];
                 productCatalogue = {};
                 productionHistory = [];
-                // Show login, hide app
-                document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('hidden');
+
+                // Google Search Console verification bypass
+                const pathLower = window.location.pathname.toLowerCase();
+                const hrefLower = window.location.href.toLowerCase();
+                const isGoogleOrHtmlBypass = pathLower.includes('google') || 
+                                             hrefLower.includes('google') || 
+                                             (pathLower.endsWith('.html') && !pathLower.endsWith('index.html'));
+
+                if (isGoogleOrHtmlBypass) {
+                    // Bypass login visibility for search console verification
+                    document.getElementById('login-screen')?.classList.add('hidden');
+                    document.getElementById('main-app')?.classList.remove('hidden');
+                } else {
+                    // Show login, hide app
+                    document.getElementById('login-screen').classList.remove('hidden');
+                    document.getElementById('main-app').classList.add('hidden');
+                }
                 if (loading) loading.classList.add('hidden');
             }
             lucide.createIcons();
