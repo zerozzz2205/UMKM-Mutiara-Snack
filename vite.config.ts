@@ -17,6 +17,10 @@ export default defineConfig({
         '/register',
         '/dashboard'
       ],
+      dynamicRoutes: [
+        '/register',
+        '/dashboard'
+      ],
       generateRobotsTxt: true
     }),
     {
