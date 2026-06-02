@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
+import Sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig({
   server: {
@@ -8,6 +9,16 @@ export default defineConfig({
     host: '0.0.0.0'
   },
   plugins: [
+    Sitemap({
+      hostname: 'https://umkm-mutiara-snack.vercel.app',
+      readable: true,
+      routes: [
+        '/',
+        '/register',
+        '/dashboard'
+      ],
+      generateRobotsTxt: true
+    }),
     {
       name: 'copy-google-verification',
       closeBundle() {
@@ -30,3 +41,4 @@ export default defineConfig({
     }
   ]
 });
+
