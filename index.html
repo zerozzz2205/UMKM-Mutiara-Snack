@@ -516,9 +516,15 @@
 
                 <!-- Page: Analisis -->
                 <div id="page-analisis" class="page-content space-y-8 max-w-7xl mx-auto px-4 md:px-0">
-                    <div class="flex flex-col gap-1">
-                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Analisis Margin & BEP</h1>
-                        <p class="text-slate-500 text-sm md:text-base">Pahami efisiensi biaya dan target pencapaian laba Mutiara Snack.</p>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex flex-col gap-1">
+                            <h1 class="text-3xl font-bold tracking-tight text-slate-900">Analisis Margin & BEP</h1>
+                            <p class="text-slate-500 text-sm md:text-base">Pahami efisiensi biaya dan target pencapaian laba Mutiara Snack.</p>
+                        </div>
+                        <div class="flex w-full md:w-auto bg-white p-1 rounded-2xl border border-slate-200 shadow-sm shrink-0">
+                            <button onclick="toggleAnalysisTimeframe('harian')" id="btn-analysis-harian" class="flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Harian</button>
+                            <button onclick="toggleAnalysisTimeframe('bulanan')" id="btn-analysis-bulanan" class="flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Bulanan</button>
+                        </div>
                     </div>
 
                     <!-- Main Analysis Grid -->
@@ -528,7 +534,7 @@
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                                 <div>
                                     <h2 class="text-xl font-bold text-slate-900 tracking-tight">Break-even Point (BEP) Monitor</h2>
-                                    <p class="text-xs text-slate-400 font-medium">Berapa jauh lagi Mutiara Snack mencapai titik impas bulan ini?</p>
+                                    <p id="bep-subtitle" class="text-xs text-slate-400 font-medium">Berapa jauh lagi Mutiara Snack mencapai titik impas bulan ini?</p>
                                 </div>
                                 <div id="bep-status-badge" class="px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/10 text-success border border-success/20">
                                     Target Tercapai ✓
@@ -2633,30 +2639,70 @@
             }
         }
 
+        // --- Interactive Analysis Margin & BEP Timeframe ---
+        let analysisTimeframe = 'bulanan';
+
+        function toggleAnalysisTimeframe(mode) {
+            analysisTimeframe = mode;
+            const btnHarian = document.getElementById('btn-analysis-harian');
+            const btnBulanan = document.getElementById('btn-analysis-bulanan');
+
+            if (btnHarian && btnBulanan) {
+                if (mode === 'harian') {
+                    btnHarian.className = "flex-1 md:flex-none px-6 py-2.5 bg-white shadow-sm border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary";
+                    btnBulanan.className = "flex-1 md:flex-none px-6 py-2.5 text-slate-400 text-[10px] font-bold uppercase tracking-widest";
+                } else {
+                    btnBulanan.className = "flex-1 md:flex-none px-6 py-2.5 bg-white shadow-sm border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary";
+                    btnHarian.className = "flex-1 md:flex-none px-6 py-2.5 text-slate-400 text-[10px] font-bold uppercase tracking-widest";
+                }
+            }
+
+            const bepSubText = document.getElementById('bep-subtitle');
+            if (bepSubText) {
+                bepSubText.innerText = mode === 'harian' 
+                    ? 'Berapa jauh lagi Mutiara Snack mencapai titik impas hari ini?' 
+                    : 'Berapa jauh lagi Mutiara Snack mencapai titik impas bulan ini?';
+            }
+
+            updateAnalysisUI();
+        }
+        window.toggleAnalysisTimeframe = toggleAnalysisTimeframe;
+
         function updateAnalysisUI() {
-            // Find current month totals from Buku Kas Utama (dynamically calculated from Firestore transactions)
-            let currentMonthIncome = 0;
-            let currentMonthExpense = 0;
+            // Find counts based on active timeframe from Buku Kas Utama (dynamically calculated from Firestore transactions)
+            let periodIncome = 0;
+            let periodExpense = 0;
             
             const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
             
             cashTransactions.forEach(tx => {
                 if (!tx.date) return;
-                const d = new Date(tx.date);
-                if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-                    if (tx.type === 'income') {
-                        currentMonthIncome += tx.amount || 0;
-                    } else if (tx.type === 'expense') {
-                        currentMonthExpense += tx.amount || 0;
+                const txDate = new Date(tx.date);
+                if (analysisTimeframe === 'harian') {
+                    if (tx.date === todayStr) {
+                        if (tx.type === 'income') {
+                            periodIncome += tx.amount || 0;
+                        } else if (tx.type === 'expense') {
+                            periodExpense += tx.amount || 0;
+                        }
+                    }
+                } else {
+                    if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+                        if (tx.type === 'income') {
+                            periodIncome += tx.amount || 0;
+                        } else if (tx.type === 'expense') {
+                            periodExpense += tx.amount || 0;
+                        }
                     }
                 }
             });
 
-            const targetBEP = currentMonthExpense;
+            const targetBEP = periodExpense;
 
-            const completionPercent = targetBEP > 0 ? Math.round((currentMonthIncome / targetBEP) * 100) : 0;
+            const completionPercent = targetBEP > 0 ? Math.round((periodIncome / targetBEP) * 100) : 0;
             
             // Update UI elements
             const progressBar = document.getElementById('bep-progress-bar');
@@ -2675,7 +2721,7 @@
                     statusBadge.className = "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100";
                     progressBar.className = "h-full rounded-full bg-amber-500 transition-all duration-1000 shadow-sm";
                 } else {
-                    statusText += "Target Tercapai ✓";
+                    statusText += "Target Impas Tercapai ✓";
                     statusBadge.className = "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-success/10 text-success border border-success/20";
                     progressBar.className = "h-full rounded-full bg-success transition-all duration-1000 shadow-sm";
                 }
@@ -2684,7 +2730,7 @@
             
             const salesRealityEl = document.getElementById('sales-reality');
             if (salesRealityEl) {
-                salesRealityEl.innerText = 'Rp' + currentMonthIncome.toLocaleString('id-ID');
+                salesRealityEl.innerText = 'Rp' + periodIncome.toLocaleString('id-ID');
             }
             const bepTargetEl = document.getElementById('bep-target');
             if (bepTargetEl) {
@@ -2694,12 +2740,12 @@
             // Update Business Metrics Detail Grid
             const metricsIncomeVal = document.getElementById('metrics-income-value');
             if (metricsIncomeVal) {
-                metricsIncomeVal.innerText = 'Rp' + currentMonthIncome.toLocaleString('id-ID');
+                metricsIncomeVal.innerText = 'Rp' + periodIncome.toLocaleString('id-ID');
             }
 
             const metricsExpenseVal = document.getElementById('metrics-expense-value');
             if (metricsExpenseVal) {
-                metricsExpenseVal.innerText = 'Rp' + currentMonthExpense.toLocaleString('id-ID');
+                metricsExpenseVal.innerText = 'Rp' + periodExpense.toLocaleString('id-ID');
             }
 
             const metricsNetValue = document.getElementById('metrics-net-value');
@@ -2707,7 +2753,7 @@
             const metricsNetCard = document.getElementById('metrics-net-card');
             
             if (metricsNetValue && metricsNetStatus) {
-                const diff = currentMonthIncome - currentMonthExpense;
+                const diff = periodIncome - periodExpense;
                 metricsNetValue.innerText = 'Rp' + Math.abs(diff).toLocaleString('id-ID');
                 
                 if (diff < 0) {
@@ -2728,7 +2774,7 @@
             }
 
             // Update profits margin %
-            const marginPercent = currentMonthIncome > 0 ? ((currentMonthIncome - currentMonthExpense) / currentMonthIncome) * 100 : 0;
+            const marginPercent = periodIncome > 0 ? ((periodIncome - periodExpense) / periodIncome) * 100 : 0;
             
             const marginPercentageDisplay = document.getElementById('margin-percentage-display');
             const marginPercentageBig = document.getElementById('margin-percentage-big');
@@ -2763,15 +2809,35 @@
 
             if (marginExplanation) {
                 if (marginPercent < 0) {
-                    marginExplanation.innerHTML = `Mutiara Snack mengalami <strong class="text-danger">defisit kas sebesar ${Math.abs(marginPercent).toFixed(1)}%</strong>. Pengeluaran melebihi pemasukan bulan ini.`;
+                    marginExplanation.innerHTML = `Mutiara Snack mengalami <strong class="text-danger">defisit kas sebesar ${Math.abs(marginPercent).toFixed(1)}%</strong>. Pengeluaran melebihi pemasukan untuk tingkat filter yang dipilih.`;
                 } else {
                     marginExplanation.innerHTML = `Dari setiap Rp10.000 pemasukan, <strong class="text-success">Rp${Math.round(marginPercent / 100 * 10000).toLocaleString('id-ID')}</strong> adalah margin surplus laba bersih operasional.`;
                 }
             }
         }
 
+        function initDefaultCashBookDates() {
+            const startInput = document.getElementById('filter-date-start');
+            const endInput = document.getElementById('filter-date-end');
+            
+            if (startInput && endInput && !startInput.value && !endInput.value) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                
+                const firstDayStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+                const lastDay = new Date(year, month + 1, 0);
+                const lastDayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+                
+                startInput.value = firstDayStr;
+                endInput.value = lastDayStr;
+            }
+        }
+
         function renderInitialData() {
-            toggleDashboardTimeframe('bulanan');
+            initDefaultCashBookDates();
+            toggleDashboardTimeframe(dashboardTimeframe);
+            toggleAnalysisTimeframe(analysisTimeframe);
             renderCashBook();
             const select = document.getElementById('prod-product-select');
             const currentValue = select.value;
