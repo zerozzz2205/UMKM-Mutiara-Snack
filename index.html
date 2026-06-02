@@ -1298,10 +1298,10 @@
             }
         }
 
-        let isRegisterMode = false;
+        window.isRegisterMode = false;
 
         function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
+            window.isRegisterMode = !window.isRegisterMode;
             const subtitle = document.getElementById('auth-subtitle');
             const registerFields = document.getElementById('register-fields');
             const btnAuth = document.querySelector('#btn-primary-auth span');
@@ -1310,7 +1310,7 @@
 
             errorDiv.classList.add('hidden');
 
-            if (isRegisterMode) {
+            if (window.isRegisterMode) {
                 subtitle.innerText = "Daftar akun baru untuk mulai mengelola keuangan.";
                 registerFields.classList.remove('hidden');
                 btnAuth.innerText = "Daftar Akun Baru";
@@ -3351,7 +3351,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ",
@@ -3579,6 +3579,9 @@
 
             try {
                 if (window.isRegisterMode) {
+                    if (password.length < 6) {
+                        throw { code: 'auth/weak-password', message: 'Password minimal 6 karakter' };
+                    }
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     if (name) {
                         try {
@@ -3595,22 +3598,48 @@
                 console.error("Auth error:", error);
                 errorDiv.classList.remove('hidden');
                 let message = "Terjadi kesalahan.";
-                if (error.code === 'auth/email-already-in-use') message = "Email sudah terdaftar.";
-                else if (error.code === 'auth/invalid-credential') message = "Email atau password salah.";
-                else if (error.code === 'auth/weak-password') message = "Password terlalu lemah (min 6 karakter).";
-                else if (error.code === 'auth/operation-not-allowed') message = "Metode Login Email belum diaktifkan di Firebase Console.";
-                else message = error.message;
+                if (window.isRegisterMode) {
+                    if (error.code === 'auth/email-already-in-use') {
+                        message = "Email sudah digunakan";
+                    } else if (error.code === 'auth/weak-password') {
+                        message = "Password minimal 6 karakter";
+                    } else if (error.code === 'auth/invalid-email') {
+                        message = "Format email tidak valid.";
+                    } else {
+                        message = error.message || "Gagal melakukan pendaftaran.";
+                    }
+                } else {
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                        message = "Email atau password salah.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        message = "Format email tidak valid.";
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        message = "Metode Login Email belum diaktifkan di Firebase Console.";
+                    } else {
+                        message = error.message || "Gagal masuk ke akun.";
+                    }
+                }
                 errorMsg.innerText = message;
                 loading.classList.add('hidden');
             }
         };
 
+        // Track register mode reliably via a backend property as well
+        window._isRegisterRealMode = false;
+
         // Make mode globally available for handleAuthAction check
         Object.defineProperty(window, 'isRegisterMode', {
             get: () => {
+                if (window._isRegisterRealMode) return true;
                 const title = document.getElementById('btn-primary-auth')?.querySelector('span')?.innerText;
-                return title === "Daftar Akun Baru";
-            }
+                if (!title) return false;
+                const cleanTitle = title.trim().toUpperCase();
+                return cleanTitle === "DAFTAR AKUN BARU" || cleanTitle === "REGISTER" || cleanTitle === "DAFTAR";
+            },
+            set: (val) => {
+                window._isRegisterRealMode = !!val;
+            },
+            configurable: true
         });
 
         // --- Save Settings Logic ---
@@ -3697,11 +3726,11 @@
                     createdAt: productCatalogue[sku]?.createdAt || new Date().toISOString()
                 };
 
-                await setDoc(doc(db, 'inventory', sku), payload);
+                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), payload);
                 closeInventoryModal();
                 alert(editingInventorySku ? 'Data item berhasil diperbarui!' : 'Item stok berhasil ditambahkan!');
             } catch (error) {
-                handleFirestoreError(error, editingInventorySku ? OperationType.UPDATE : OperationType.CREATE, `inventory/${sku}`);
+                handleFirestoreError(error, editingInventorySku ? OperationType.UPDATE : OperationType.CREATE, `inventory/${auth.currentUser.uid}_${sku}`);
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -3713,10 +3742,10 @@
         window.deleteInventoryItem = async (sku) => {
             if (confirm(`Apakah Anda yakin ingin menghapus "${productCatalogue[sku].name}"? Semua data stok akan hilang.`)) {
                 try {
-                    await deleteDoc(doc(db, 'inventory', sku));
+                    await deleteDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku));
                     alert('Item berhasil dihapus.');
                 } catch (error) {
-                    handleFirestoreError(error, OperationType.DELETE, `inventory/${sku}`);
+                    handleFirestoreError(error, OperationType.DELETE, `inventory/${auth.currentUser.uid}_${sku}`);
                 }
             }
         };
@@ -3752,7 +3781,7 @@
                     createdAt: new Date().toISOString()
                 };
 
-                await setDoc(doc(db, 'inventory', skuCode), payload);
+                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + skuCode), payload);
                 alert(`Sukses! ${name} telah terdaftar.`);
                 document.getElementById('new-sku-name').value = '';
                 document.getElementById('new-sku-hpp').value = '';
@@ -3797,7 +3826,7 @@
             lucide.createIcons();
 
             try {
-                await setDoc(doc(db, 'inventory', sku), {
+                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
                     stock: (product.stock || 0) + qty
                 }, { merge: true });
 
@@ -3868,7 +3897,7 @@
 
             try {
                 if (product) {
-                    await setDoc(doc(db, 'inventory', sku), {
+                    await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
                         stock: Math.max(0, (product.stock || 0) - oldQty + newQty)
                     }, { merge: true });
                 }
@@ -3898,7 +3927,7 @@
                 const product = productCatalogue[sku];
                 try {
                     if (product) {
-                        await setDoc(doc(db, 'inventory', sku), {
+                        await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
                             stock: Math.max(0, (product.stock || 0) - batch.qty)
                         }, { merge: true });
                     }
@@ -3960,37 +3989,18 @@
                     handleFirestoreError(error, OperationType.LIST, pathForOnSnapshot);
                 });
 
-                // Register real-time Snapshot of inventory
+                // Register real-time Snapshot of inventory (Purely Read-only!)
                 const pathForInventory = 'inventory';
                 const qInv = query(collection(db, pathForInventory), where('userId', '==', user.uid));
                 if (unsubscribeInventory) unsubscribeInventory();
-                unsubscribeInventory = onSnapshot(qInv, async (snapshot) => {
-                    // Seed defaults if empty
-                    if (snapshot.empty) {
-                        try {
-                            for (const sku of Object.keys(DEFAULT_CATALOGUE)) {
-                                const defItem = DEFAULT_CATALOGUE[sku];
-                                await setDoc(doc(db, 'inventory', sku), {
-                                    userId: user.uid,
-                                    name: defItem.name,
-                                    barcode: defItem.barcode || '',
-                                    hpp: defItem.hpp || 0,
-                                    stock: defItem.stock || 0,
-                                    shelfLife: defItem.shelfLife || 30,
-                                    price: defItem.price || (defItem.hpp || 0) * 1.5,
-                                    createdAt: new Date().toISOString()
-                                });
-                            }
-                        } catch (e) {
-                            console.error("Failed to seed default catalog:", e);
-                        }
-                        return;
-                    }
-
+                unsubscribeInventory = onSnapshot(qInv, (snapshot) => {
                     const tempCatalogue = {};
                     snapshot.forEach(doc => {
                         const data = doc.data();
-                        tempCatalogue[doc.id] = {
+                        const docId = doc.id;
+                        // Strip userId prefix from the document ID to reconstruct the clean SKU code
+                        const sku = docId.replace(user.uid + '_', '');
+                        tempCatalogue[sku] = {
                             name: data.name,
                             barcode: data.barcode,
                             hpp: parseInt(data.hpp) || 0,
@@ -4005,6 +4015,28 @@
                 }, (error) => {
                     handleFirestoreError(error, OperationType.LIST, pathForInventory);
                 });
+
+                // Check and trigger a one-off database seed if catalog is empty (Safe, Single One-Time Check!)
+                try {
+                    const snapshotOnce = await getDocs(qInv);
+                    if (snapshotOnce.empty) {
+                        for (const sku of Object.keys(DEFAULT_CATALOGUE)) {
+                            const defItem = DEFAULT_CATALOGUE[sku];
+                            await setDoc(doc(db, 'inventory', user.uid + '_' + sku), {
+                                userId: user.uid,
+                                name: defItem.name,
+                                barcode: defItem.barcode || '',
+                                hpp: defItem.hpp || 0,
+                                stock: defItem.stock || 0,
+                                shelfLife: defItem.shelfLife || 30,
+                                price: defItem.price || (defItem.hpp || 0) * 1.5,
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error("One-time default catalog seeding error:", e);
+                }
 
                 // Register real-time Snapshot of production
                 const pathForProduction = 'production';
