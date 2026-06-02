@@ -2319,35 +2319,47 @@
                         let dayExp = 0;
                         cashTransactions.forEach(tx => {
                             if (tx.date === dStr) {
-                                if (tx.type === 'income') dayInc += tx.amount;
-                                else dayExp += tx.amount;
+                                if (tx.type === 'income') dayInc += tx.amount || 0;
+                                else dayExp += tx.amount || 0;
                             }
                         });
                         incomeData.push(dayInc / 1000000); // Scale to Juta
                         expenseData.push(dayExp / 1000000);
                     }
                 } else {
-                    // Monthly View (Mock Jan-Apr + Real May)
-                    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'];
-                    
-                    // Mock data for Jan - Apr (in millions)
-                    const mockIncome = [12.5, 15.2, 14.8, 18.5];
-                    const mockExpense = [8.2, 9.5, 10.1, 12.4];
-                    
-                    // Calculate real May data
-                    let mayInc = 0;
-                    let mayExp = 0;
+                    // Monthly View - dynamic based on actual months up to the current month in live Firestore db
+                    const monthsCount = 6;
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                     const now = new Date();
-                    cashTransactions.forEach(tx => {
-                        const d = new Date(tx.date);
-                        if (d.getMonth() === 4 && d.getFullYear() === 2026) { // Mei 2026
-                            if (tx.type === 'income') mayInc += tx.amount;
-                            else mayExp += tx.amount;
-                        }
-                    });
-
-                    incomeData = [...mockIncome, mayInc / 1000000];
-                    expenseData = [...mockExpense, mayExp / 1000000];
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    
+                    // Generate last 6 months (including current month) dynamically
+                    for (let i = monthsCount - 1; i >= 0; i--) {
+                        const date = new Date(currentYear, currentMonth - i, 1);
+                        const mIndex = date.getMonth();
+                        const yIndex = date.getFullYear();
+                        
+                        labels.push(`${monthNames[mIndex]} ${yIndex}`);
+                        
+                        let monthInc = 0;
+                        let monthExp = 0;
+                        
+                        cashTransactions.forEach(tx => {
+                            if (!tx.date) return;
+                            const d = new Date(tx.date);
+                            if (d.getMonth() === mIndex && d.getFullYear() === yIndex) {
+                                if (tx.type === 'income') {
+                                    monthInc += tx.amount || 0;
+                                } else if (tx.type === 'expense') {
+                                    monthExp += tx.amount || 0;
+                                }
+                            }
+                        });
+                        
+                        incomeData.push(monthInc / 1000000); // Scale to Juta
+                        expenseData.push(monthExp / 1000000);
+                    }
                 }
 
                 if (dashboardChart) {
@@ -2401,14 +2413,27 @@
 
             const ctx2 = document.getElementById('costBreakdownChart');
             if (ctx2) {
-                // Calculate expense categories
+                // Calculate expense categories filtered by selected timeframe to stay reactively in sync
                 const expenseCategories = {};
                 let totalExpense = 0;
+                
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
                 cashTransactions.forEach(tx => {
                     if (tx.type === 'expense') {
+                        const txDate = new Date(tx.date);
+                        if (dashboardTimeframe === 'harian') {
+                            if (tx.date !== todayStr) return;
+                        } else {
+                            if (txDate.getMonth() !== currentMonth || txDate.getFullYear() !== currentYear) return;
+                        }
+                        
                         const cat = tx.category || 'Lain-lain';
-                        expenseCategories[cat] = (expenseCategories[cat] || 0) + tx.amount;
-                        totalExpense += tx.amount;
+                        expenseCategories[cat] = (expenseCategories[cat] || 0) + (tx.amount || 0);
+                        totalExpense += tx.amount || 0;
                     }
                 });
 
