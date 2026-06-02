@@ -4,21 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinUMKM - Solusi Keuangan UMKM</title>
-    <!-- Dynamic Vercel Analytics Hook -->
-    <script>
-        const vercelScript = document.createElement('script');
-        vercelScript.src = '/_vercel/insights/script.js';
-        vercelScript.defer = true;
-        document.head.appendChild(vercelScript);
-    </script>
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -382,24 +375,13 @@
                             <div class="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden group">
                                 <div class="relative z-10">
                                     <h2 class="text-xl font-black mb-1">AI Insights</h2>
-                                    <p class="text-[10px] text-white/40 mb-4 uppercase tracking-widest font-bold">Analisis Real-time</p>
-                                    <p id="ai-insight-text" class="text-xs text-white/70 leading-relaxed mb-6 italic">"Trend konsumsi cemilan meningkat 12% di sore hari. Rekomendasi promosi bundle di jam 15.00."</p>
-                                    <button id="btn-minta-insight" onclick="mintaInsightBaru()" class="h-10 px-6 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all">Minta Insight Baru</button>
+                                    <p class="text-[10px] text-white/40 mb-6 uppercase tracking-widest font-bold">Analisis Hari Ini</p>
+                                    <p class="text-xs text-white/70 leading-relaxed mb-6 italic">"Trend konsumsi cemilan meningkat 12% di sore hari. Rekomendasi promosi bundle di jam 15.00."</p>
+                                    <button class="h-10 px-6 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all">Lihat Detail Analisis</button>
                                 </div>
                                 <div class="absolute -right-8 -bottom-8 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
                                     <i data-lucide="zap" class="h-40 w-40"></i>
                                 </div>
-                            </div>
-
-                            <!-- Catat Transaksi via AI (Teks) -->
-                            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-                                <h2 class="text-lg font-bold text-slate-900 mb-2 font-display uppercase tracking-widest text-xs">Catat Transaksi via AI</h2>
-                                <p class="text-[11px] text-slate-400 mb-4 font-medium">Ketik rincian aktivitas keuangan Anda. AI asisten menyusun format data secara otomatis.</p>
-                                <textarea id="ai-input-text" placeholder="Contoh: 'Tadi sore beli bahan baku singkong dan gula aren senilai 250 ribu rupiah'" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none mb-4 h-20 text-slate-700"></textarea>
-                                <button onclick="prosesTransaksiAIForm()" id="btn-proses-ai-form" class="w-full h-11 bg-primary text-white font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-primary-dark transition-all active:scale-95 flex items-center justify-center gap-2">
-                                    <span>Proses dengan Gemini AI</span>
-                                    <i data-lucide="sparkles" class="h-4 w-4"></i>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -960,8 +942,7 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 animate-fade-in">
+                            <div class="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                                 <button onclick="logout()" class="w-full md:w-auto h-12 px-6 border-2 border-danger text-danger font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-danger/5 flex items-center justify-center gap-2 transition-all">
                                     <i data-lucide="log-out" class="h-4 w-4"></i> Keluar Akun
                                 </button>
@@ -1190,25 +1171,6 @@
     </div>
 
     <script>
-        // Inisialisasi fallback aman window.firebaseAuth untuk mencegah error destructuring di komponen frontend
-        window.firebaseAuth = window.firebaseAuth || {
-            auth: {
-                currentUser: null,
-                onAuthStateChanged: (cb) => {
-                    if (typeof cb === 'function') {
-                        // Triger asinkronus null user
-                        const timer = setTimeout(() => cb(null), 100);
-                        return () => clearTimeout(timer);
-                    }
-                    return () => {};
-                }
-            },
-            signOut: async () => { console.warn("Firebase Auth belum siap."); },
-            signInWithPopup: async () => { alert("Layanan login sedang bersiap, silakan tunggu beberapa detik..."); },
-            signInWithRedirect: async () => { alert("Layanan login sedang bersiap, silakan tunggu beberapa detik..."); },
-            provider: null
-        };
-
         // Initialize Lucide Icons
         lucide.createIcons();
 
@@ -1245,10 +1207,6 @@
         // Logout function
         async function logout() {
             try {
-                if (!window.firebaseAuth) {
-                    alert("Layanan Firebase belum siap. Silakan coba sebentar lagi.");
-                    return;
-                }
                 const { auth, signOut } = window.firebaseAuth;
                 await signOut(auth);
                 location.reload();
@@ -1291,18 +1249,6 @@
             errorDiv.classList.add('hidden');
 
             try {
-                if (!window.firebaseAuth) {
-                    // Tunggu hingga 5 detik (50 * 100ms) untuk menginisialisasi window.firebaseAuth
-                    for (let i = 0; i < 50; i++) {
-                        if (window.firebaseAuth) break;
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-                }
-
-                if (!window.firebaseAuth) {
-                    throw new Error("Layanan keamanan Firebase sedang diinisialisasi. Silakan tunggu beberapa detik dan coba lagi.");
-                }
-
                 const { auth, signInWithPopup, signInWithRedirect, provider } = window.firebaseAuth;
                 
                 // Use a short delay to check if popup is blocked
@@ -1825,44 +1771,49 @@
             document.getElementById('btn-save-tx').innerText = 'Simpan Transaksi';
         }
 
-        async function saveTransaction() {
+        function saveTransaction() {
             const desc = document.getElementById('tx-desc').value;
             const amount = parseInt(document.getElementById('tx-amount').value);
             const date = document.getElementById('tx-date').value;
             const category = document.getElementById('tx-category').value;
-            const type = document.getElementById('tx-type-hidden')?.value || currentModalMode || 'income';
 
             if (!desc || isNaN(amount) || amount <= 0) {
                 alert('Data transaksi tidak valid!');
                 return;
             }
 
-            const auth = window.firebaseAuth?.auth;
-            if (!auth || !auth.currentUser) {
-                alert('Anda harus login terlebih dahulu!');
-                return;
-            }
-
-            const transactionData = {
-                user_id: auth.currentUser.uid,
-                deskripsi: desc,
-                kategori: category,
-                jenis: type === 'income' ? 'pemasukan' : 'pengeluaran',
-                nominal: amount,
-                created_at: new Date(date).toISOString()
-            };
-
-            const supabase = window.supabase;
-            const { data, error } = await supabase.from('transactions').insert([ transactionData ]);
-            
-            if (error) {
-                alert('Gagal save ke Supabase: ' + error.message);
+            if (editingTxId) {
+                // Update existing
+                const index = cashTransactions.findIndex(tx => tx.id === editingTxId);
+                if (index !== -1) {
+                    cashTransactions[index] = {
+                        ...cashTransactions[index],
+                        category,
+                        desc,
+                        amount,
+                        date
+                    };
+                }
+                editingTxId = null;
             } else {
-                alert('Data BERHASIL ke-save di Supabase!');
-                location.reload();
+                // Create new
+                const newTx = {
+                    id: Date.now(),
+                    type: currentModalMode,
+                    category,
+                    desc,
+                    amount,
+                    date
+                };
+                cashTransactions.unshift(newTx);
             }
+
+            saveState();
+            renderInitialData();
+            closeTransactionModal();
+            
+            alert('Transaksi berhasil disimpan!');
         }
-        window.saveTransaction = saveTransaction;
 
         let sidebarTxMode = 'income';
 
@@ -3040,24 +2991,14 @@
         });
     </script>
 
-    <!-- Firebase & Gemini AI Platform Integration -->
+    <!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.12.0";
-
-        // Dynamic Loading of External Credentials via Vite Environment Variables
-        const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ";
-        const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-
-        // Supabase Credentials Initialized via Client CDN SDK
-        const SUPABASE_URL = "https://fukwqedhzhwbxkojlxnk.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_D_3wtiuGC04rdVQEYKMF1A_MBcjcA-p";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: FIREBASE_API_KEY,
+            apiKey: "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ",
             authDomain: "database-1ee2b.firebaseapp.com",
             projectId: "database-1ee2b",
             storageBucket: "database-1ee2b.firebasestorage.app",
@@ -3073,202 +3014,6 @@
         // Share with global window so vanilla JS can use it
         window.firebaseDB = db;
         window.firebaseAuth = { auth, signOut, signInWithPopup, signInWithRedirect, provider };
-        window.supabase = supabase;
-
-        // --- GEMINI MAPPING ENGINE & LIVE INSIGHTS INTEGRATION ---
-
-        // Fungsi mapping transaksi dengan asisten AI Gemini dan langsung menyimpannya ke Supabase
-        window.prosesTransaksiDenganAI = async (textInput) => {
-            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_API_KEY;
-            if (!geminiKey) {
-                alert("Kunci API Gemini tidak ditemukan! Pastikan VITE_GEMINI_API_KEY terkonfigurasi di env variable.");
-                return null;
-            }
-
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
-                alert("Akses ditolak: Silakan masuk terlebih dahulu!");
-                return null;
-            }
-
-            try {
-                const genAI = new GoogleGenerativeAI(geminiKey);
-                const model = genAI.getGenerativeModel({
-                    model: "gemini-1.5-flash",
-                    generationConfig: { responseMimeType: "application/json" }
-                });
-
-                const todayStr = new Date().toISOString().split('T')[0];
-
-                const prompt = `Anda adalah database-mapping engine untuk aplikasi FinUMKM Mutiara Snack. Tugas Anda adalah mengekstrak data transaksi keuangan dari chat/teks pengguna ke dalam format JSON database Supabase.
-
-Kategori yang didukung: 'Penjualan', 'Lain-lain', 'Bahan Baku', 'Operasional', 'Gaji', 'Pemasaran'.
-Kategori Default: 'Lain-lain'.
-Tipe/Jenis ('jenis') yang didukung: 'pemasukan' (untuk pemasukan) atau 'pengeluaran' (untuk pengeluaran).
-
-JSON output harus menggunakan field berikut saja:
-- user_id (string): ID pengguna saat ini, yang adalah "${currentUser.uid}"
-- jenis (string): WAJIB salah satu: 'pemasukan' atau 'pengeluaran'
-- kategori (string): Kategori transaksi yang sesuai.
-- deskripsi (string): Ringkasan deskripsi transaksi yang ringkas dan jelas.
-- nominal (number): Angka mutlak/nominal transaksi (dalam rupiah, bersihkan dari Rp atau titik ribuan).
-
-Jika input tidak valid/tidak berisi laporan transaksi, format sebagai:
-{
-  "user_id": "${currentUser.uid}",
-  "jenis": "pengeluaran",
-  "kategori": "Lain-lain",
-  "deskripsi": "Input tidak valid",
-  "nominal": 0
-}
-
-Teks pengguna: "${textInput}"
-Hasilkan respon berupa JSON murni objek tunggal.`;
-
-                const result = await model.generateContent(prompt);
-                const responseText = result.response.text().trim();
-                
-                let transactionData;
-                try {
-                    transactionData = JSON.parse(responseText);
-                } catch (e) {
-                    console.error("Gagal parse JSON Gemini:", responseText);
-                    throw new Error("Gagal menyusun format data dari AI secara valid. Silakan coba kembali.");
-                }
-
-                // 1. Eksekusi penyimpanan data ke Supabase sesuai instruksi user
-                const { data, error } = await supabase.from('transactions').insert([ transactionData ]);
-                if (error) {
-                    console.error("Kesalahan menyimpan di Supabase:", error);
-                } else {
-                    console.log("Transaksi tersimpan di Supabase:", data);
-                }
-
-                // Sinkronisasi lokal agar list transaksi real-time terupdate responsif
-                const newTxLocal = {
-                    id: (data && data[0] && data[0].id) || Date.now(),
-                    type: transactionData.jenis === 'pemasukan' ? 'income' : 'expense',
-                    category: transactionData.kategori,
-                    desc: transactionData.deskripsi,
-                    amount: transactionData.nominal,
-                    date: todayStr
-                };
-
-                cashTransactions.unshift(newTxLocal);
-                saveState();
-                renderInitialData();
-
-                return newTxLocal;
-            } catch (error) {
-                console.error("Kesalahan prosesTransaksiDenganAI:", error);
-                alert("Gagal memproses transaksi AI: " + error.message);
-                throw error;
-            }
-        };
-
-        // Fungsi Form Helper untuk memproses input dari area teks UI
-        window.prosesTransaksiAIForm = async () => {
-            const textarea = document.getElementById('ai-input-text');
-            const btn = document.getElementById('btn-proses-ai-form');
-            if (!textarea || !btn) return;
-
-            const text = textarea.value.trim();
-            if (!text) {
-                alert("Silakan ketikkan detail aktivitas kas atau transaksi terlebih dahulu!");
-                return;
-            }
-
-            const originalBtnText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin text-white"></i> Mengolah...`;
-            lucide.createIcons();
-
-            try {
-                const parsed = await window.prosesTransaksiDenganAI(text);
-                if (parsed) {
-                    textarea.value = '';
-                    alert(`Transaksi Berhasil Dicatat AI!\n\nDeskripsi: ${parsed.desc}\nKategori: ${parsed.category}\nJenis: ${parsed.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}\nNominal: Rp ${parsed.amount.toLocaleString('id-ID')}\nTanggal: ${parsed.date}`);
-                }
-            } catch (err) {
-                console.error("Gagal eksekusi entri asisten AI:", err);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Proses dengan Gemini AI</span><i data-lucide="sparkles" class="h-4 w-4"></i>`;
-                lucide.createIcons();
-            }
-        };
-
-        // Fungsi koneksi LIVE INSIGHTS finansial yang tajam dari data Firestore & local
-        window.mintaInsightBaru = async () => {
-            const btn = document.getElementById('btn-minta-insight');
-            const txt = document.getElementById('ai-insight-text');
-            if (!btn || !txt) return;
-
-            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_API_KEY;
-            if (!geminiKey) {
-                alert("Kunci API Gemini tidak ditemukan! Pastikan VITE_GEMINI_API_KEY terkonfigurasi di env variable.");
-                return;
-            }
-
-            const originalBtnText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i> Memproses...`;
-            lucide.createIcons();
-
-            try {
-                const currentUser = auth.currentUser;
-                let txContext = [];
-
-                if (currentUser) {
-                    try {
-                        const q = query(collection(db, "transactions"), where("userId", "==", currentUser.uid));
-                        const snap = await getDocs(q);
-                        snap.forEach(doc => {
-                            txContext.push(doc.data());
-                        });
-                    } catch (firestoreErr) {
-                        console.warn("Firestore fetch failing, fallback ke ketersediaan data lokal:", firestoreErr);
-                    }
-                }
-
-                // Fallback ke data cashTransactions di penyimpanan lokal jika Firestore kosong
-                if (txContext.length === 0) {
-                    txContext = cashTransactions;
-                }
-
-                // Kirim maksimal 15 riwayat transaksi terakhir sebagai konteks performa bisnis
-                const recentTransactions = txContext.slice(0, 15).map(t => {
-                    return {
-                        type: t.type,
-                        category: t.category,
-                        desc: t.desc,
-                        amount: t.amount,
-                        date: t.date
-                    };
-                });
-
-                const genAI = new GoogleGenerativeAI(geminiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-                const prompt = `Anda adalah Asisten Penasihat Keuangan Mikro (AI Business Coach) untuk UMKM "Mutiara Snack".
-Berikut adalah riwayat kas nyata dari transaksi mikro terbaru kami:
-${JSON.stringify(recentTransactions)}
-
-Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan realistis mengenai pengeluaran/pemasukan tersebut (gunakan gaya mentor bisnis profesional dalam bahasa Indonesia yang membakar semangat). Panjang kalimat maksimal 20 kata.`;
-
-                const result = await model.generateContent(prompt);
-                const insightResult = result.response.text().trim();
-                
-                txt.innerText = insightResult;
-            } catch (error) {
-                console.error("Gagal mendapatkan Live AI Insights:", error);
-                alert("Kesalahan AI Insights: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `Minta Insight Baru`;
-                lucide.createIcons();
-            }
-        };
 
         // Handle Redirect Result on load
         getRedirectResult(auth).catch(error => {
@@ -3329,7 +3074,7 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
             }
         });
 
-        // --- Save Settings Logic without Security Credentials ---
+        // --- Save Settings Logic ---
         window.saveProfileSettings = async () => {
             const btn = document.getElementById('btn-save-settings');
             if (!btn) return;
@@ -3339,13 +3084,14 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
             const umkmName = document.getElementById('settings-umkm-name').value;
             const waNumber = document.getElementById('settings-wa-number').value;
 
-            // 1. SIMULASI LOADING STATE
+            // 1. SIMULASI LOADING STATE (setIsLoading true)
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses...`;
             lucide.createIcons();
 
             try {
                 // 2. SIMULASI LOCAL STATE RESPONSIVE (Await 1 detik)
+                // Karena saat ini database belum diaktifkan, kita simulasi proses loading agar tidak hang
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
                 // 3. PERBARUI DATA PROFIL LOKAL DI UI
@@ -3353,7 +3099,7 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
                     document.getElementById('user-name').innerText = ownerName;
                 }
                 
-                // Simpan identitas ke localStorage untuk sesi ini
+                // Simpan identitas ke localStorage untuk sesi ini (Sync State)
                 const user = auth.currentUser;
                 if (user) {
                     const localProfileData = {
@@ -3363,25 +3109,16 @@ Berikan 1 kalimat evaluasi finansial yang sangat tajam, solutif, pragmatis, dan 
                         updatedAt: new Date().toISOString()
                     };
                     localStorage.setItem(`profile_${user.uid}`, JSON.stringify(localProfileData));
-                    
-                    // Simpan extra user profile detail ke Firestore
-                    try {
-                        await setDoc(doc(db, "users", user.uid), {
-                            umkmName: umkmName,
-                            whatsapp: waNumber
-                        }, { merge: true });
-                    } catch (e) {
-                        console.warn("Gagal update user profile di Firestore:", e);
-                    }
                 }
 
+                // Munculkan notifikasi sukses sesuai permintaan
                 alert("Pengaturan profil Mutiara Snack berhasil diperbarui!");
-                location.reload();
 
             } catch (error) {
                 console.error("Save Settings Error:", error);
                 alert("Terjadi kesalahan saat menyimpan pengaturan.");
             } finally {
+                // 4. RESET STATE LOADING DENGAN BENAR (setIsLoading false)
                 btn.disabled = false;
                 btn.innerHTML = originalBtnText;
                 lucide.createIcons();
