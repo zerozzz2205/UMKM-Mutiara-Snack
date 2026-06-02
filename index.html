@@ -95,74 +95,156 @@
 <body class="bg-[#f8fafc] text-[#0f172a] font-sans antialiased">
 
     <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 z-[200] flex min-h-screen w-full flex-col items-center justify-center bg-zinc-900 p-0 overflow-y-auto">
-        <div class="relative w-full min-h-screen md:min-h-0 md:max-w-md p-8 sm:p-10 md:p-12 bg-white rounded-none md:rounded-[3rem] shadow-2xl flex flex-col justify-center text-center mx-auto">
-            <div class="h-20 w-20 bg-primary rounded-3xl shadow-xl shadow-primary/20 flex items-center justify-center rotate-12 mx-auto mb-8 shrink-0">
-                <i data-lucide="store" class="h-10 w-10 text-white -rotate-12"></i>
-            </div>
+    <div id="login-screen" class="fixed inset-0 z-[200] grid grid-cols-1 lg:grid-cols-2 min-h-screen w-full bg-slate-950 overflow-y-auto">
+        <!-- Kolom Kiri: Branded Left Column (Desktop Only: hidden lg:flex) -->
+        <div class="hidden lg:flex flex-col justify-between p-16 bg-gradient-to-tr from-slate-900 via-zinc-900 to-emerald-950 text-white relative overflow-hidden">
+            <!-- Background Decorative Blur Rings/Bubbles or Pattern -->
+            <div class="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
             
-            <div class="space-y-2 mb-10 text-center">
-                <h1 class="text-3xl font-black tracking-tight text-slate-900">FinUMKM</h1>
-                <p id="auth-subtitle" class="text-slate-500 font-medium text-sm">Masuk untuk mengelola keuangan UMKM Anda.</p>
+            <!-- Top Branding -->
+            <div class="flex items-center gap-3 relative z-10">
+                <div class="h-10 w-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <i data-lucide="store" class="h-5 w-5 text-white"></i>
+                </div>
+                <span class="text-xl font-black tracking-tight bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">FinUMKM</span>
             </div>
 
-            <!-- Auth Form -->
-            <div id="auth-form" class="space-y-4 text-left">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Email</label>
-                    <input type="email" id="auth-email" placeholder="nama@email.com" class="w-full h-12 px-5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
+            <!-- Main Headline Content -->
+            <div class="space-y-8 relative z-10 my-auto max-w-lg">
+                <div>
+                    <span class="text-[9px] font-bold uppercase tracking-widest bg-white/10 text-emerald-400 px-4 py-1.5 rounded-full border border-white/10">Solusi Finansial UMKM Pintar & Akurat</span>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Password</label>
-                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full h-12 px-5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
-                </div>
+                <h1 class="text-4xl xl:text-5xl font-black tracking-tight leading-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                    FinUMKM - Kendali Penuh Operasional Bisnis Anda.
+                </h1>
+                <p class="text-sm xl:text-base text-slate-400 font-medium leading-relaxed">
+                    Sistem pencatatan kas otomatis, manajemen stok batch multi-ED, serta analisis margin keuntungan yang terintegrasi secara modular, real-time, dan aman.
+                </p>
                 
-                <div id="register-fields" class="hidden">
-                    <div class="space-y-1.5 mt-4">
-                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Lengkap</label>
-                        <input type="text" id="auth-name" placeholder="Budi Santoso" class="w-full h-12 px-5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
+                <!-- Benefit badges/grid -->
+                <div class="grid grid-cols-2 gap-6 pt-8 border-t border-white/5">
+                    <div class="flex items-start gap-3">
+                        <div class="h-7 w-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                            <i data-lucide="check" class="h-4 w-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Buku Kas Real-Time</h4>
+                            <p class="text-[11px] text-slate-500 leading-normal mt-0.5">Catat mutasi keuangan sekejap mata.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="h-7 w-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                            <i data-lucide="check" class="h-4 w-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Batch & Multi-ED</h4>
+                            <p class="text-[11px] text-slate-500 leading-normal mt-0.5">Pantau kadaluarsa produk akurat.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer info -->
+            <div class="text-[11px] text-slate-500 font-medium relative z-10 flex items-center justify-between">
+                <span>© 2026 Mutiara Snack. All rights reserved.</span>
+                <div class="flex gap-4">
+                    <span class="hover:text-white transition-colors cursor-pointer">Syarat & Ketentuan</span>
+                    <span class="hover:text-white transition-colors cursor-pointer">Kebijakan Privasi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: The Input/Auth Form Area -->
+        <div class="flex flex-col justify-center min-h-screen bg-white px-6 sm:px-16 lg:px-20 py-12 relative">
+            <div class="w-full max-w-sm mx-auto flex flex-col justify-center">
+                <!-- Mobile only Branding / Header logo -->
+                <div class="lg:hidden flex flex-col items-center mb-10">
+                    <div class="h-16 w-16 bg-primary rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center rotate-12 mb-4">
+                        <i data-lucide="store" class="h-8 w-8 text-white -rotate-12"></i>
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tight text-slate-900">FinUMKM</h1>
+                    <p class="text-slate-400 font-bold text-[9px] mt-1 uppercase tracking-widest">Sistem Finansial Mutiara Snack</p>
+                </div>
+
+                <div class="space-y-2 mb-10 text-center lg:text-left">
+                    <h2 class="text-2xl font-black tracking-tight text-slate-900 hidden lg:block">Selamat Datang 👋</h2>
+                    <p id="auth-subtitle" class="text-slate-500 font-medium text-sm">Masuk untuk mengelola keuangan UMKM Anda.</p>
+                </div>
+
+                <!-- Auth Form -->
+                <div id="auth-form" class="space-y-4 text-left">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Email Anda</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <i data-lucide="mail" class="h-4 w-4"></i>
+                            </span>
+                            <input type="email" id="auth-email" placeholder="nama@email.com" class="w-full h-12 pl-11 pr-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Kata Sandi</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <i data-lucide="lock" class="h-4 w-4"></i>
+                            </span>
+                            <input type="password" id="auth-password" placeholder="••••••••" class="w-full h-12 pl-11 pr-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
+                        </div>
+                    </div>
+                    
+                    <div id="register-fields" class="hidden">
+                        <div class="space-y-1.5 mt-4">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Lengkap Pemilik UMKM</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                    <i data-lucide="user" class="h-4 w-4"></i>
+                                </span>
+                                <input type="text" id="auth-name" placeholder="Budi Santoso" class="w-full h-12 pl-11 pr-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-primary/20 focus:bg-white transition-all outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="auth-error" class="hidden p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4">
+                        <i data-lucide="alert-circle" class="h-4 w-4 shrink-0"></i>
+                        <span id="auth-error-msg">Terjadi kesalahan</span>
+                    </div>
+
+                    <button id="btn-primary-auth" onclick="handleAuthAction()" class="w-full h-14 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 group mt-6">
+                        <span>Masuk Sekarang</span>
+                        <i data-lucide="arrow-right" class="h-4 w-4 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    
+                    <div id="login-loading" class="hidden flex items-center justify-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest animate-pulse mt-2">
+                        <i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i>
+                        Memproses...
                     </div>
                 </div>
 
-                <div id="auth-error" class="hidden p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4">
-                    <i data-lucide="alert-circle" class="h-4 w-4 shrink-0"></i>
-                    <span id="auth-error-msg">Terjadi kesalahan</span>
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+                        <span class="bg-white px-4 text-slate-400">Atau Lanjutkan Dengan</span>
+                    </div>
                 </div>
 
-                <button id="btn-primary-auth" onclick="handleAuthAction()" class="w-full h-14 bg-primary text-white font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 group mt-6">
-                    <span>Masuk Sekarang</span>
-                    <i data-lucide="arrow-right" class="h-4 w-4 group-hover:translate-x-1 transition-transform"></i>
+                <button onclick="loginWithGoogle()" class="w-full h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-4 hover:border-primary/40 hover:bg-slate-50 transition-all active:scale-95 group mb-4 shrink-0">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span class="font-bold text-slate-700 tracking-tight">Akun Google</span>
                 </button>
                 
-                <div id="login-loading" class="hidden flex items-center justify-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest animate-pulse mt-2">
-                    <i data-lucide="loader-2" class="h-3 w-3 animate-spin"></i>
-                    Memproses...
-                </div>
+                <p id="toggle-auth-text" class="mt-8 text-[10px] text-slate-400 font-bold text-center lg:text-left uppercase tracking-[0.2em] shrink-0">
+                    Pioneer Keuangan UMKM Digital | 
+                    <button onclick="toggleAuthMode()" class="text-primary hover:underline">Daftar Akun</button>
+                </p>
             </div>
-
-            <div class="relative my-8">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-100"></div>
-                </div>
-                <div class="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
-                    <span class="bg-white px-4 text-slate-300">Atau Hubungkan Dengan</span>
-                </div>
-            </div>
-
-            <button onclick="loginWithGoogle()" class="w-full h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-4 hover:border-primary/40 hover:bg-slate-50 transition-all active:scale-95 group mb-4 shrink-0">
-                <svg class="h-6 w-6" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span class="font-bold text-slate-700 tracking-tight">Akun Google</span>
-            </button>
-            
-            <p id="toggle-auth-text" class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] shrink-0">
-                Pioneer Keuangan UMKM Digital | 
-                <button onclick="toggleAuthMode()" class="text-primary hover:underline">Daftar Akun</button>
-            </p>
         </div>
     </div>
 
