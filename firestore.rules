@@ -37,7 +37,7 @@ service cloud.firestore {
     // Inventory Validation
     function isValidInventory(data) {
       return data.keys().hasAll(['userId', 'name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price', 'createdAt']) &&
-             data.keys().size() == 8 &&
+             data.keys().size() <= 12 &&
              data.userId == request.auth.uid &&
              data.name is string && data.name.size() <= 200 &&
              data.barcode is string && data.barcode.size() <= 100 &&
@@ -45,7 +45,11 @@ service cloud.firestore {
              data.stock is number && data.stock >= 0 &&
              data.shelfLife is number && data.shelfLife >= 0 &&
              data.price is number && data.price >= 0 &&
-             data.createdAt is string;
+             data.createdAt is string &&
+             (!data.keys().hasAny(['recipeRawMaterialId']) || data.recipeRawMaterialId is string) &&
+             (!data.keys().hasAny(['recipeQtyNeeded']) || data.recipeQtyNeeded is number) &&
+             (!data.keys().hasAny(['recipeYield']) || data.recipeYield is number) &&
+             (!data.keys().hasAny(['recipe']) || data.recipe is list);
     }
 
     // Production Validation
@@ -105,7 +109,7 @@ service cloud.firestore {
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() && isValidInventory(incoming()) && isValidId(skuCode);
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidInventory(incoming()) && isValidId(skuCode) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price', 'recipeRawMaterialId', 'recipeQtyNeeded', 'recipeYield', 'recipe'])
       );
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(skuCode);
     }

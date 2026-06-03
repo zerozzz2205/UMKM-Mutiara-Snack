@@ -867,20 +867,66 @@
                             </div>
 
                             <!-- Dynamic Raw Material Selection and Production Yield inputs -->
-                            <div id="sku-dynamic-fields" class="grid md:grid-cols-3 gap-6 mb-6">
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-bold uppercase tracking-widest text-white/30 text-emerald-400">Pilih Bahan Baku Mentah</label>
-                                    <select id="new-sku-raw-material" onchange="calculateLiveHpp()" class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-sm focus:border-primary transition-colors outline-none text-white">
-                                        <!-- Will be dynamically populated -->
-                                    </select>
+                            <div id="sku-dynamic-fields" class="space-y-6 mb-6">
+                                <!-- Multi Raw Materials Entry block -->
+                                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-4">
+                                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                                        <i data-lucide="flask-conical" class="h-4 w-4"></i> Formulasi Resep Bahan Baku (Bisa Lebih Dari 1)
+                                    </h4>
+                                    
+                                    <div class="grid md:grid-cols-12 gap-4 items-end">
+                                        <div class="md:col-span-5 space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-white/40">Bahan Baku Mentah</label>
+                                            <select id="new-sku-raw-material" onchange="updateSelectedRawMaterialUnit()" class="w-full h-11 bg-slate-800 border border-white/10 rounded-xl px-3 text-xs focus:border-primary transition-colors outline-none text-white">
+                                                <!-- Will be dynamically populated -->
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-4 space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-white/40">Jumlah Digunakan</label>
+                                            <div class="relative">
+                                                <input type="number" id="new-sku-qty-needed" placeholder="0.00" class="w-full h-11 bg-slate-800 border border-white/10 rounded-xl px-4 text-sm outline-none text-white pr-12">
+                                                <span class="absolute right-4 top-3 text-[10px] font-bold text-white/40 uppercase" id="new-sku-raw-unit">kg</span>
+                                            </div>
+                                        </div>
+                                        <div class="md:col-span-3">
+                                            <button type="button" onclick="addRecipeIngredient()" class="w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/15">
+                                                <i data-lucide="plus" class="h-4 w-4"></i> Tambah
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Table for selected ingredients -->
+                                    <div id="recipe-ingredients-container" class="hidden overflow-hidden rounded-xl border border-white/10 bg-slate-950/40">
+                                        <table class="w-full text-left">
+                                            <thead class="bg-white/5 border-b border-white/10">
+                                                <tr class="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                                                    <th class="px-4 py-2.5">Bahan Baku</th>
+                                                    <th class="px-4 py-2.5 text-center">Jumlah</th>
+                                                    <th class="px-4 py-2.5 text-right">Harga Satuan</th>
+                                                    <th class="px-3 py-2.5 text-right">Subtotal</th>
+                                                    <th class="px-4 py-2.5 text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recipe-ingredients-body" class="divide-y divide-white/5 text-[11px]">
+                                                <!-- Added rows will go here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-bold uppercase tracking-widest text-white/30 text-emerald-400">Bahan Baku yang Digunakan (Qty)</label>
-                                    <input type="number" id="new-sku-qty-needed" oninput="calculateLiveHpp()" placeholder="Jumlah unit/kg" class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-sm outline-none text-white">
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-bold uppercase tracking-widest text-white/30 text-emerald-400">Target Hasil Jadi (Awal)</label>
-                                    <input type="number" id="new-sku-initial-yield" oninput="calculateLiveHpp()" placeholder="Berapa batch/pack jadi?" class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-sm outline-none text-white">
+
+                                <!-- Target Yield Settings -->
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-white/40">Target Hasil Jadi (Awal) per Formula</label>
+                                        <input type="number" id="new-sku-initial-yield" oninput="calculateLiveHpp()" placeholder="Berapa pack / unit jadi?" class="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-sm outline-none text-white">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-white/40">Estimasi HPP Formula per Unit</label>
+                                        <div class="h-11 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 flex items-center justify-between">
+                                            <span class="text-xs font-bold text-emerald-400">Total HPP per Unit / Pack:</span>
+                                            <span class="text-sm font-black text-emerald-400" id="new-sku-hpp-preview">Rp0</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -929,6 +975,13 @@
                                         <div class="flex justify-between items-center">
                                             <span class="text-sm font-bold text-slate-900">Total Nilai Produksi:</span>
                                             <span class="text-xl font-bold text-primary" id="prod-total-display">Rp0</span>
+                                        </div>
+                                        <!-- Real-time formula breakdown -->
+                                        <div id="recipe-calc-breakdown" class="hidden border-t border-slate-100 pt-3 mt-1 space-y-2 text-xs">
+                                            <div class="font-bold text-slate-600 pb-1 border-b border-dashed border-slate-200">Kalkulasi Kebutuhan Bahan Baku:</div>
+                                            <div id="recipe-materials-list" class="space-y-2">
+                                                <!-- Dynamic materials list will go here -->
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1633,10 +1686,7 @@
         });
 
         // Global State (Dynamic SKUs with Persistence)
-        const DEFAULT_CATALOGUE = {
-            'SNK-001': { name: 'Kripik Singkong Madu', hpp: 8500, shelfLife: 30, stock: 45, barcode: '8991234567001' },
-            'SNK-002': { name: 'Kacang Telur Mutiara', hpp: 12000, shelfLife: 14, stock: 28, barcode: '8991234567002' }
-        };
+        const DEFAULT_CATALOGUE = {};
 
         let productCatalogue = JSON.parse(localStorage.getItem('productCatalogue')) || DEFAULT_CATALOGUE;
         let productionHistory = JSON.parse(localStorage.getItem('productionHistory')) || [];
@@ -1798,7 +1848,26 @@
         // Production Module Logic
         function toggleSKUManager() {
             const el = document.getElementById('sku-manager');
+            if (!el) return;
             el.classList.toggle('hidden');
+            
+            if (!el.classList.contains('hidden')) {
+                window.currentRecipeIngredients = [];
+                if (typeof window.renderRecipeIngredientsTable === 'function') {
+                    window.renderRecipeIngredientsTable();
+                }
+                if (typeof window.calculateLiveHpp === 'function') {
+                    window.calculateLiveHpp();
+                }
+                const nameInp = document.getElementById('new-sku-name');
+                if (nameInp) nameInp.value = '';
+                const lifeInp = document.getElementById('new-sku-life');
+                if (lifeInp) lifeInp.value = '30';
+                const qtyInp = document.getElementById('new-sku-qty-needed');
+                if (qtyInp) qtyInp.value = '';
+                const yldInp = document.getElementById('new-sku-initial-yield');
+                if (yldInp) yldInp.value = '100';
+            }
         }
 
         let activeBatchCode = '';
@@ -1810,35 +1879,7 @@
             if (preview) preview.innerText = activeBatchCode;
         }
 
-        function registerNewSKU() {
-            const name = document.getElementById('new-sku-name').value;
-            const hpp = parseInt(document.getElementById('new-sku-hpp').value);
-            const life = parseInt(document.getElementById('new-sku-life').value);
 
-            if (!name || isNaN(hpp) || isNaN(life)) {
-                alert('Oops! Lengkapi semua data produk baru.');
-                return;
-            }
-
-            const skuCode = 'SKU-' + (Object.keys(productCatalogue).length + 101);
-            productCatalogue[skuCode] = { 
-                name, 
-                hpp, 
-                shelfLife: life, 
-                stock: 0, 
-                barcode: '899' + Math.floor(Math.random() * 1000000000),
-                price: hpp * 1.5 // Default margin
-            };
-            
-            saveState();
-            renderInitialData();
-
-            alert(`Sukses! ${name} telah terdaftar.`);
-            document.getElementById('new-sku-name').value = '';
-            document.getElementById('new-sku-hpp').value = '';
-            document.getElementById('new-sku-life').value = '';
-            toggleSKUManager();
-        }
 
         function updateProductionCalc() {
             const select = document.getElementById('prod-product-select');
@@ -1846,21 +1887,31 @@
             const hppDisplay = document.getElementById('prod-hpp-display');
             const totalDisplay = document.getElementById('prod-total-display');
             const edPreview = document.getElementById('ed-preview');
+            const recipeCalcDiv = document.getElementById('recipe-calc-breakdown');
+            const materialsListDiv = document.getElementById('recipe-materials-list');
 
             if (!activeBatchCode) updateBatchCode();
 
             const sku = select.value;
-            if (!sku) return;
+            if (!sku) {
+                if (recipeCalcDiv) recipeCalcDiv.classList.add('hidden');
+                return;
+            }
 
             const product = productCatalogue[sku];
+            if (!product) {
+                if (recipeCalcDiv) recipeCalcDiv.classList.add('hidden');
+                return;
+            }
+
             const hpp = product.hpp || 0;
             const life = product.shelfLife || 0;
             const qty = parseInt(qtyInput.value) || 0;
 
             const total = hpp * qty;
             
-            hppDisplay.innerText = 'Rp' + parseInt(hpp).toLocaleString();
-            totalDisplay.innerText = 'Rp' + total.toLocaleString();
+            hppDisplay.innerText = 'Rp ' + parseInt(hpp).toLocaleString('id-ID');
+            totalDisplay.innerText = 'Rp ' + total.toLocaleString('id-ID');
 
             if (life > 0) {
                 const ed = new Date();
@@ -1870,6 +1921,63 @@
                 edPreview.classList.add('text-primary');
             } else {
                 edPreview.innerText = '-';
+            }
+
+            // Real-time recipe calculations for multiple materials
+            if (recipeCalcDiv && materialsListDiv) {
+                const rawMatList = window.rawMaterialsList || [];
+                
+                // Get recipe items (either array from new format, or map single item from old format)
+                let recipe = [];
+                let recipeYield = parseFloat(product.recipeYield) || 1;
+
+                if (Array.isArray(product.recipe)) {
+                    recipe = product.recipe;
+                } else if (product.recipeRawMaterialId) {
+                    recipe = [{
+                        rawMaterialId: product.recipeRawMaterialId,
+                        name: '', // Will look up
+                        qtyNeeded: parseFloat(product.recipeQtyNeeded) || 0
+                    }];
+                }
+
+                if (recipe.length > 0 && recipeYield > 0) {
+                    materialsListDiv.innerHTML = '';
+
+                    recipe.forEach(item => {
+                        const mat = rawMatList.find(m => m.id === item.rawMaterialId);
+                        const matName = mat ? mat.name : (item.name || 'Bahan Baku');
+                        const unit = mat ? (mat.unit || 'kg') : (item.unit || 'kg');
+                        const currentStock = mat ? (parseFloat(mat.quantity) || 0) : 0;
+                        
+                        // Calculate amount required: (ProdQty / recipeYield) * recipeQtyNeeded
+                        const requiredRawQty = parseFloat(((qty / recipeYield) * item.qtyNeeded).toFixed(4));
+                        const remainingStock = parseFloat((currentStock - requiredRawQty).toFixed(4));
+                        
+                        const statusClass = remainingStock < 0 ? 'text-rose-500 font-bold animate-pulse' : 'text-emerald-600 font-bold';
+                        const statusText = remainingStock < 0 ? `Sisa: Kurang ${Math.abs(remainingStock).toLocaleString('id-ID')} ${unit}!` : `Sisa: Aman (${remainingStock.toLocaleString('id-ID')} ${unit})`;
+
+                        const itemRow = document.createElement('div');
+                        itemRow.className = "p-2 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-0.5 text-slate-800";
+                        itemRow.innerHTML = `
+                            <div class="flex justify-between font-semibold">
+                                <span>${matName}</span>
+                                <span class="text-slate-950">${requiredRawQty.toLocaleString('id-ID')} ${unit}</span>
+                            </div>
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-slate-400">Stok: ${currentStock.toLocaleString('id-ID')} ${unit}</span>
+                                <span class="${statusClass}">${statusText}</span>
+                            </div>
+                        `;
+                        materialsListDiv.appendChild(itemRow);
+                    });
+
+                    recipeCalcDiv.classList.remove('hidden');
+                } else {
+                    recipeCalcDiv.classList.add('hidden');
+                }
+            } else {
+                if (recipeCalcDiv) recipeCalcDiv.classList.add('hidden');
             }
         }
 
@@ -3989,29 +4097,117 @@
             }
         };
 
-        window.calculateLiveHpp = () => {
+        window.currentRecipeIngredients = [];
+
+        window.updateSelectedRawMaterialUnit = () => {
             const selectRaw = document.getElementById('new-sku-raw-material');
-            const qtyNeeded = parseFloat(document.getElementById('new-sku-qty-needed')?.value) || 0;
+            const unitEl = document.getElementById('new-sku-raw-unit');
+            if (selectRaw && unitEl) {
+                const opt = selectRaw.selectedOptions[0];
+                if (opt) {
+                    unitEl.innerText = opt.dataset.unit || 'kg';
+                }
+            }
+        };
+
+        window.addRecipeIngredient = () => {
+            const selectRaw = document.getElementById('new-sku-raw-material');
+            const qtyInput = document.getElementById('new-sku-qty-needed');
+            
+            if (!selectRaw || !qtyInput) return;
+            const rawId = selectRaw.value;
+            const qtyNeeded = parseFloat(qtyInput.value);
+
+            if (!rawId) {
+                alert('Pilih bahan baku mentah terlebih dahulu!');
+                return;
+            }
+            if (isNaN(qtyNeeded) || qtyNeeded <= 0) {
+                alert('Masukkan jumlah bahan baku yang digunakan dengan benar (> 0)!');
+                return;
+            }
+
+            const opt = selectRaw.selectedOptions[0];
+            const name = opt.innerText.split('(')[0].trim();
+            const price = parseFloat(opt.dataset.price) || 0;
+            const unit = opt.dataset.unit || 'kg';
+
+            const existingIndex = window.currentRecipeIngredients.findIndex(item => item.rawMaterialId === rawId);
+            if (existingIndex > -1) {
+                window.currentRecipeIngredients[existingIndex].qtyNeeded = parseFloat((window.currentRecipeIngredients[existingIndex].qtyNeeded + qtyNeeded).toFixed(4));
+            } else {
+                window.currentRecipeIngredients.push({
+                    rawMaterialId: rawId,
+                    name: name,
+                    qtyNeeded: qtyNeeded,
+                    unit: unit,
+                    pricePerUnit: price
+                });
+            }
+
+            qtyInput.value = '';
+            window.renderRecipeIngredientsTable();
+            window.calculateLiveHpp();
+        };
+
+        window.removeRecipeIngredient = (rawId) => {
+            window.currentRecipeIngredients = window.currentRecipeIngredients.filter(item => item.rawMaterialId !== rawId);
+            window.renderRecipeIngredientsTable();
+            window.calculateLiveHpp();
+        };
+
+        window.renderRecipeIngredientsTable = () => {
+            const container = document.getElementById('recipe-ingredients-container');
+            const tbody = document.getElementById('recipe-ingredients-body');
+            if (!container || !tbody) return;
+
+            if (window.currentRecipeIngredients.length === 0) {
+                container.classList.add('hidden');
+                tbody.innerHTML = '';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            window.currentRecipeIngredients.forEach(item => {
+                const subtotal = item.qtyNeeded * item.pricePerUnit;
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-white/90">${item.name}</td>
+                    <td class="px-4 py-3 text-center font-bold text-emerald-400">${item.qtyNeeded} ${item.unit}</td>
+                    <td class="px-4 py-3 text-right text-white/50">Rp ${(item.pricePerUnit || 0).toLocaleString('id-ID')}</td>
+                    <td class="px-3 py-3 text-right font-bold text-white">Rp ${Math.round(subtotal || 0).toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button type="button" onclick="removeRecipeIngredient('${item.rawMaterialId}')" class="text-rose-400 hover:text-rose-300 transition-colors p-1 rounded-lg hover:bg-rose-500/10">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            container.classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.calculateLiveHpp = () => {
             const initialYield = parseInt(document.getElementById('new-sku-initial-yield')?.value) || 0;
             const hppInput = document.getElementById('new-sku-hpp');
+            const hppPreview = document.getElementById('new-sku-hpp-preview');
 
-            if (!selectRaw || !hppInput) return;
-
-            const selectedOpt = selectRaw.selectedOptions[0];
-            if (!selectedOpt) {
-                hppInput.value = '';
-                return;
+            const totalCost = window.currentRecipeIngredients.reduce((sum, item) => sum + (item.qtyNeeded * item.pricePerUnit), 0);
+            
+            let estimatedHpp = 0;
+            if (initialYield > 0 && totalCost > 0) {
+                estimatedHpp = Math.round(totalCost / initialYield);
             }
 
-            const pricePerUnit = parseFloat(selectedOpt.dataset.price) || 0;
-            if (qtyNeeded <= 0 || initialYield <= 0) {
-                hppInput.value = '0';
-                return;
+            if (hppInput) {
+                hppInput.value = estimatedHpp;
             }
-
-            const totalCost = qtyNeeded * pricePerUnit;
-            const estimatedHpp = Math.round(totalCost / initialYield);
-            hppInput.value = estimatedHpp;
+            if (hppPreview) {
+                hppPreview.innerText = `Rp ${estimatedHpp.toLocaleString('id-ID')}`;
+            }
         };
 
         // --- Firestore Backed Inventory Management ---
@@ -4083,12 +4279,22 @@
         window.registerNewSKU = async () => {
             const name = document.getElementById('new-sku-name').value.trim();
             const life = parseInt(document.getElementById('new-sku-life').value);
-            const rawMaterialId = document.getElementById('new-sku-raw-material')?.value;
-            const qtyNeeded = parseFloat(document.getElementById('new-sku-qty-needed')?.value);
             const initialYield = parseInt(document.getElementById('new-sku-initial-yield')?.value);
 
-            if (!name || isNaN(life) || !rawMaterialId || isNaN(qtyNeeded) || qtyNeeded <= 0 || isNaN(initialYield) || initialYield <= 0) {
-                alert('Oops! Lengkapi semua data pencatatan produk baru secara valid.');
+            if (!name) {
+                alert('Nama Produk Jadi wajib diisi!');
+                return;
+            }
+            if (isNaN(life) || life <= 0) {
+                alert('Masukkan Shelf Life (Hari) yang valid!');
+                return;
+            }
+            if (window.currentRecipeIngredients.length === 0) {
+                alert('Masukkan minimal satu bahan baku ke dalam formula resep!');
+                return;
+            }
+            if (isNaN(initialYield) || initialYield <= 0) {
+                alert('Masukkan Target Hasil Jadi per Batch Formulasi yang valid!');
                 return;
             }
 
@@ -4096,7 +4302,7 @@
             const originalText = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menghitung & Menyimpan...`;
+                btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Menyimpan...`;
                 lucide.createIcons();
             }
 
@@ -4105,80 +4311,61 @@
                 const skuCode = 'SKU-' + (Object.keys(productCatalogue).length + Math.floor(Math.random() * 900) + 101);
                 const randomBarcode = '899' + Math.floor(Math.random() * 1000000000);
                 
-                // Firestore Transaction
-                await runTransaction(db, async (transaction) => {
-                    const rawMaterialRef = doc(db, 'raw_materials', rawMaterialId);
-                    
-                    // --- 1. READ ---
-                    const rawDoc = await transaction.get(rawMaterialRef);
-                    if (!rawDoc.exists()) {
-                        throw new Error('Dokumen persediaan bahan baku tidak ditemukan di database!');
-                    }
-                    
-                    const rawData = rawDoc.data();
-                    const availableQty = parseFloat(rawData.quantity);
-                    const pricePerUnit = parseFloat(rawData.pricePerUnit);
-                    
-                    if (isNaN(availableQty) || isNaN(pricePerUnit) || availableQty === undefined || pricePerUnit === undefined) {
-                        throw new Error('Properti numerik bahan baku kosong atau tidak valid!');
-                    }
-                    
-                    if (availableQty < qtyNeeded) {
-                        throw new Error(`Sisa kuantitas stok bahan baku tidak mencukupi produksi! Tersedia: ${availableQty}, Dibutuhkan: ${qtyNeeded}`);
-                    }
-                    
-                    // --- 2. CALCULATE ---
-                    const totalCost = qtyNeeded * pricePerUnit;
-                    const calculatedHpp = Math.round(totalCost / initialYield);
-                    const newRawQty = availableQty - qtyNeeded;
-                    
-                    // --- 3. WRITE ---
-                    // a) Update raw material stock
-                    transaction.update(rawMaterialRef, { quantity: newRawQty });
-                    
-                    // b) Register into inventory
-                    const invDocId = auth.currentUser.uid + '_' + skuCode;
-                    const invRef = doc(db, 'inventory', invDocId);
-                    transaction.set(invRef, {
-                        userId: auth.currentUser.uid,
-                        name: name,
-                        sku: skuCode,
-                        barcode: randomBarcode,
-                        hpp: calculatedHpp,
-                        stock: initialYield,
-                        shelfLife: life,
-                        price: Math.round(calculatedHpp * 1.5),
-                        createdAt: new Date().toISOString()
-                    });
-                    
-                    // c) Record logs to production history
-                    const prodHistoryCol = collection(db, 'production');
-                    const prodHistoryRef = doc(prodHistoryCol);
-                    transaction.set(prodHistoryRef, {
-                        userId: auth.currentUser.uid,
-                        batchCode: 'BTC-' + Math.floor(Math.random() * 90000 + 10000),
-                        sku: skuCode,
-                        productName: name,
-                        qty: initialYield,
-                        expiryDate: new Date(Date.now() + life * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-                        hpp: calculatedHpp,
-                        timestamp: new Date().toISOString(),
-                        status: "Selesai"
-                    });
+                // Calculate HPP aggregate across all selected raw materials
+                const totalCost = window.currentRecipeIngredients.reduce((sum, item) => sum + (item.qtyNeeded * item.pricePerUnit), 0);
+                const calculatedHpp = Math.max(0, Math.round(totalCost / initialYield));
+
+                const invDocId = auth.currentUser.uid + '_' + skuCode;
+                const invRef = doc(db, 'inventory', invDocId);
+                
+                // Build clean recipe list payload
+                const recipePayload = window.currentRecipeIngredients.map(item => ({
+                    rawMaterialId: item.rawMaterialId,
+                    name: item.name,
+                    qtyNeeded: item.qtyNeeded,
+                    unit: item.unit,
+                    pricePerUnit: item.pricePerUnit
+                }));
+
+                await setDoc(invRef, {
+                    userId: auth.currentUser.uid,
+                    name: name,
+                    sku: skuCode,
+                    barcode: randomBarcode,
+                    hpp: calculatedHpp,
+                    stock: 0, // No stock until produced
+                    shelfLife: life,
+                    price: Math.round(calculatedHpp * 1.5),
+                    createdAt: new Date().toISOString(),
+                    // Keep fallback properties for seamless backward compatibility
+                    recipeRawMaterialId: recipePayload[0].rawMaterialId,
+                    recipeQtyNeeded: recipePayload[0].qtyNeeded,
+                    recipeYield: initialYield,
+                    // Multi-material recipes array
+                    recipe: recipePayload
                 });
+
+                alert(`Sukses! SKU "${name}" telah terdaftar dengan HPP formulasi sebesar Rp${calculatedHpp.toLocaleString('id-ID')}. Silakan mulai produksi batch di Manajemen Produksi untuk menambah stok.`);
                 
-                alert(`Sukses! ${name} telah terdaftar dengan HPP otomatis sebesar Rp${(Math.round((qtyNeeded * parseInt(document.getElementById('new-sku-raw-material')?.selectedOptions?.[0]?.dataset?.price || 0)) / initialYield)).toLocaleString('id-ID')}.`);
-                
+                // Clear the ingredient list
+                window.currentRecipeIngredients = [];
+                if (typeof window.renderRecipeIngredientsTable === 'function') {
+                    window.renderRecipeIngredientsTable();
+                }
+
                 // Reset inputs
                 document.getElementById('new-sku-name').value = '';
                 document.getElementById('new-sku-life').value = '';
                 document.getElementById('new-sku-qty-needed').value = '';
                 document.getElementById('new-sku-initial-yield').value = '';
+                if (document.getElementById('new-sku-hpp')) {
+                    document.getElementById('new-sku-hpp').value = '';
+                }
                 
                 toggleSKUManager();
             } catch (error) {
-                console.error("registerNewSKU Transaction Failed:", error);
-                alert('Transaksi Gagal: ' + error.message);
+                console.error("registerNewSKU Failed:", error);
+                alert('Pendaftaran SKU Gagal: ' + error.message);
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -4216,19 +4403,93 @@
             lucide.createIcons();
 
             try {
-                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
-                    stock: (product.stock || 0) + qty
-                }, { merge: true });
+                await runTransaction(db, async (transaction) => {
+                    const invDocId = auth.currentUser.uid + '_' + sku;
+                    const invRef = doc(db, 'inventory', invDocId);
 
-                await addDoc(collection(db, 'production'), {
-                    userId: auth.currentUser.uid,
-                    batchCode,
-                    sku,
-                    productName: product.name,
-                    qty,
-                    expiryDate,
-                    hpp: product.hpp || 0,
-                    timestamp: new Date().toISOString()
+                    // 1. READ the latest inventory product state
+                    const invSnap = await transaction.get(invRef);
+                    if (!invSnap.exists()) {
+                        throw new Error('Produk tidak ditemukan di database!');
+                    }
+                    const latestProduct = invSnap.data();
+
+                    // Check if it has raw material formula recipe array or legacy single material
+                    let recipe = [];
+                    let recipeYield = parseFloat(latestProduct.recipeYield) || 0;
+
+                    if (Array.isArray(latestProduct.recipe)) {
+                        recipe = latestProduct.recipe;
+                    } else if (latestProduct.recipeRawMaterialId) {
+                        recipe = [{
+                            rawMaterialId: latestProduct.recipeRawMaterialId,
+                            qtyNeeded: parseFloat(latestProduct.recipeQtyNeeded) || 0
+                        }];
+                    }
+
+                    if (recipe.length > 0 && recipeYield > 0) {
+                        // 1. PERFORM ALL READS FIRST (Required by Firestore Transaction rules)
+                        const rawMaterialSnaps = [];
+                        for (const item of recipe) {
+                            const rawMaterialRef = doc(db, 'raw_materials', item.rawMaterialId);
+                            const rawSnap = await transaction.get(rawMaterialRef);
+                            if (!rawSnap.exists()) {
+                                throw new Error(`Bahan baku resep tidak ditemukan di database! (ID: ${item.rawMaterialId})`);
+                            }
+                            rawMaterialSnaps.push({
+                                ref: rawMaterialRef,
+                                snap: rawSnap,
+                                item: item
+                            });
+                        }
+
+                        // 2. VALIDATE QUANTITIES
+                        const updatesToCommit = [];
+                        for (const entry of rawMaterialSnaps) {
+                            const rawData = entry.snap.data();
+                            const availableQty = parseFloat(rawData.quantity) || 0;
+                            const unit = rawData.unit || 'kg';
+                            const matName = rawData.name || entry.item.name || 'Bahan Baku';
+
+                            // Calculate required amount: (ProductionQty / Yield) * IngredientQtyNeeded
+                            const requiredRawQty = parseFloat(((qty / recipeYield) * entry.item.qtyNeeded).toFixed(4));
+                            
+                            if (availableQty < requiredRawQty) {
+                                throw new Error(`Stok bahan baku "${matName}" tidak mencukupi produksi! Dibutuhkan: ${requiredRawQty} ${unit}, Tersedia: ${availableQty} ${unit}`);
+                            }
+
+                            const newRawQty = parseFloat((availableQty - requiredRawQty).toFixed(4));
+                            updatesToCommit.push({
+                                ref: entry.ref,
+                                quantity: newRawQty
+                            });
+                        }
+
+                        // 3. APPLY WRITES
+                        for (const update of updatesToCommit) {
+                            transaction.update(update.ref, { quantity: update.quantity });
+                        }
+                    }
+
+                    // 2. WRITE/UPDATE inventory finished product stock
+                    const currentStock = latestProduct.stock || 0;
+                    transaction.update(invRef, {
+                        stock: currentStock + qty
+                    });
+
+                    // 3. WRITE production log
+                    const prodHistoryCol = collection(db, 'production');
+                    const prodHistoryRef = doc(prodHistoryCol);
+                    transaction.set(prodHistoryRef, {
+                        userId: auth.currentUser.uid,
+                        batchCode: batchCode,
+                        sku: sku,
+                        productName: latestProduct.name,
+                        qty: qty,
+                        expiryDate: expiryDate,
+                        hpp: latestProduct.hpp || 0,
+                        timestamp: new Date().toISOString()
+                    });
                 });
 
                 btn.innerHTML = `<i data-lucide="check-circle" class="h-4 w-4"></i> Stock Updated!`;
@@ -4247,7 +4508,11 @@
                 }, 2000);
 
             } catch (error) {
-                handleFirestoreError(error, OperationType.WRITE, 'production');
+                console.error("submitProduction Transaction Failed:", error);
+                alert('Transaksi Gagal: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+                lucide.createIcons();
             }
         };
 
@@ -4398,7 +4663,11 @@
                             stock: parseInt(data.stock) || 0,
                             shelfLife: parseInt(data.shelfLife) || 30,
                             price: parseFloat(data.price) || (parseInt(data.hpp) || 0) * 1.5,
-                            createdAt: data.createdAt
+                            createdAt: data.createdAt,
+                            recipeRawMaterialId: data.recipeRawMaterialId || null,
+                            recipeQtyNeeded: parseFloat(data.recipeQtyNeeded) || 0,
+                            recipeYield: parseFloat(data.recipeYield) || 0,
+                            recipe: data.recipe || null
                         };
                     });
                     productCatalogue = tempCatalogue;
@@ -4453,8 +4722,12 @@
                                 opt.innerText = `${mat.name} (${mat.quantity} ${mat.unit || 'unit'}) - Rp${(mat.pricePerUnit || 0).toLocaleString('id-ID')}`;
                                 opt.dataset.price = mat.pricePerUnit;
                                 opt.dataset.qty = mat.quantity;
+                                opt.dataset.unit = mat.unit || 'kg';
                                 selectRaw.appendChild(opt);
                             });
+                            if (window.updateSelectedRawMaterialUnit) {
+                                window.updateSelectedRawMaterialUnit();
+                            }
                         }
                     }
 
