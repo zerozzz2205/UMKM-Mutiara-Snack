@@ -245,7 +245,7 @@
                 
                 <p id="toggle-auth-text" class="mt-8 text-[10px] text-slate-400 font-bold text-center lg:text-left uppercase tracking-[0.2em] shrink-0">
                     Pioneer Keuangan UMKM Digital | 
-                    <button onclick="toggleAuthMode()" class="text-primary hover:underline">Daftar Akun</button>
+                    <button onclick="window.toggleAuthMode()" class="text-primary hover:underline">Daftar Akun</button>
                 </p>
             </div>
         </div>
@@ -1317,15 +1317,17 @@
                 subtitle.innerText = "Daftar akun baru untuk mulai mengelola keuangan.";
                 registerFields.classList.remove('hidden');
                 btnAuth.innerText = "Daftar Akun Baru";
-                toggleText.innerHTML = `Sudah punya akun? <button onclick="toggleAuthMode()" class="text-primary font-bold hover:underline">Masuk di sini</button>`;
+                toggleText.innerHTML = `Sudah punya akun? <button onclick="window.toggleAuthMode()" class="text-primary font-bold hover:underline">Masuk di sini</button>`;
             } else {
                 subtitle.innerText = "Masuk untuk mengelola keuangan UMKM Anda.";
                 registerFields.classList.add('hidden');
                 btnAuth.innerText = "Masuk Sekarang";
-                toggleText.innerHTML = `Belum punya akun? <button onclick="toggleAuthMode()" class="text-primary font-bold hover:underline">Daftar Akun</button>`;
+                toggleText.innerHTML = `Belum punya akun? <button onclick="window.toggleAuthMode()" class="text-primary font-bold hover:underline">Daftar Akun</button>`;
             }
             lucide.createIcons();
         }
+
+        window.toggleAuthMode = toggleAuthMode;
 
         window.handleForgotPassword = async () => {
             const email = document.getElementById('auth-email').value.trim();
@@ -3708,12 +3710,14 @@
         };
 
         // Track register mode reliably via a backend property as well
-        window._isRegisterRealMode = false;
+        window._isRegisterRealMode = null;
 
         // Make mode globally available for handleAuthAction check
         Object.defineProperty(window, 'isRegisterMode', {
             get: () => {
-                if (window._isRegisterRealMode) return true;
+                if (window._isRegisterRealMode !== null && window._isRegisterRealMode !== undefined) {
+                    return window._isRegisterRealMode;
+                }
                 const title = document.getElementById('btn-primary-auth')?.querySelector('span')?.innerText;
                 if (!title) return false;
                 const cleanTitle = title.trim().toUpperCase();
