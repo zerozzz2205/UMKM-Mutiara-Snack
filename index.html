@@ -1107,6 +1107,18 @@
                     
                     <div class="space-y-4">
                         <input type="hidden" id="tx-type-hidden">
+                        <!-- Tipe Transaksi Toggle -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tipe Transaksi</label>
+                            <div class="p-1 bg-slate-100 rounded-2xl flex gap-1 border border-slate-200/50">
+                                <button id="modal-tab-income" onclick="window.setModalTransactionType('income')" class="flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200">
+                                    Pemasukan
+                                </button>
+                                <button id="modal-tab-expense" onclick="window.setModalTransactionType('expense')" class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200">
+                                    Pengeluaran
+                                </button>
+                            </div>
+                        </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
                             <select id="tx-category" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
@@ -1873,32 +1885,64 @@
         // Financial Module
         let currentModalMode = 'income';
 
-        function openTransactionModal(mode) {
-            if (fabOpen) fabTrigger.click(); // Autoclose FAB
-            currentModalMode = mode;
+        function setModalTransactionType(type, isInitial = false) {
+            currentModalMode = type;
             const title = document.getElementById('modal-tx-title');
             const btn = document.getElementById('btn-save-tx');
-            const dateInput = document.getElementById('tx-date');
-            
             const incomeOpt = document.getElementById('opt-income');
             const expenseOpt = document.getElementById('opt-expense');
             const categorySelect = document.getElementById('tx-category');
+
+            const tabIncome = document.getElementById('modal-tab-income');
+            const tabExpense = document.getElementById('modal-tab-expense');
+
+            if (type === 'income') {
+                tabIncome.className = "flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-emerald-600 bg-white shadow-sm border border-slate-100/80 transition-all text-center";
+                tabExpense.className = "flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-all text-center";
+                
+                incomeOpt.style.display = 'block';
+                expenseOpt.style.display = 'none';
+                if (!isInitial || !categorySelect.value || categorySelect.value === 'Bahan Baku' || categorySelect.value === 'Operasional' || categorySelect.value === 'Gaji' || categorySelect.value === 'Pemasaran') {
+                    categorySelect.value = 'Penjualan';
+                }
+                
+                btn.classList.remove('bg-danger', 'shadow-danger/20');
+                btn.classList.add('bg-primary', 'shadow-primary/20');
+
+                if (editingTxId) {
+                    title.innerText = 'Edit Pemasukan';
+                } else {
+                    title.innerText = 'Tambah Pemasukan';
+                }
+            } else {
+                tabExpense.className = "flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-rose-600 bg-white shadow-sm border border-slate-100/80 transition-all text-center";
+                tabIncome.className = "flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-all text-center";
+                
+                incomeOpt.style.display = 'none';
+                expenseOpt.style.display = 'block';
+                if (!isInitial || !categorySelect.value || categorySelect.value === 'Penjualan' || categorySelect.value === 'Lain-lain') {
+                    categorySelect.value = 'Bahan Baku';
+                }
+                
+                btn.classList.remove('bg-primary', 'shadow-primary/20');
+                btn.classList.add('bg-danger', 'shadow-danger/20');
+
+                if (editingTxId) {
+                    title.innerText = 'Edit Pengeluaran';
+                } else {
+                    title.innerText = 'Catat Pengeluaran';
+                }
+            }
+        }
+        window.setModalTransactionType = setModalTransactionType;
+
+        function openTransactionModal(mode) {
+            if (fabOpen) fabTrigger.click(); // Autoclose FAB
+            const dateInput = document.getElementById('tx-date');
             
             dateInput.value = new Date().toISOString().split('T')[0];
 
-            if (mode === 'income') {
-                title.innerText = 'Tambah Pemasukan';
-                btn.className = btn.className.replace('bg-danger', 'bg-primary').replace('shadow-danger/20', 'shadow-primary/20');
-                incomeOpt.style.display = 'block';
-                expenseOpt.style.display = 'none';
-                categorySelect.value = 'Penjualan';
-            } else {
-                title.innerText = 'Catat Pengeluaran';
-                btn.className = btn.className.replace('bg-primary', 'bg-danger').replace('shadow-primary/20', 'shadow-danger/20');
-                incomeOpt.style.display = 'none';
-                expenseOpt.style.display = 'block';
-                categorySelect.value = 'Bahan Baku';
-            }
+            setModalTransactionType(mode, true);
             
             document.getElementById('transaction-modal').classList.remove('hidden');
         }
@@ -3499,7 +3543,7 @@
                     const existingTx = cashTransactions.find(tx => tx.id === editingTxId);
                     const payload = {
                         userId: auth.currentUser.uid,
-                        type: existingTx ? existingTx.type : currentModalMode,
+                        type: currentModalMode,
                         category,
                         desc,
                         amount,
