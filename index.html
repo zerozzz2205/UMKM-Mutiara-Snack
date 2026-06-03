@@ -728,29 +728,6 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Shelf-life Reminders -->
-                    <div id="expiry-reminder" class="flex flex-col md:grid md:grid-cols-2 gap-4">
-                        <div class="p-5 bg-orange-50 border border-orange-200 rounded-2xl flex items-center gap-4 transition-all hover:shadow-sm">
-                            <div class="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
-                                <i data-lucide="clock" class="h-6 w-6"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] md:text-xs font-bold text-orange-900 uppercase tracking-wider">Mendekati Expired (T-1 Hari)</p>
-                                <p class="text-xs md:text-sm text-orange-700 font-medium mt-0.5">3 Unit Kacang Telur Mutiara (Batch #082)</p>
-                            </div>
-                        </div>
-                        <div class="p-5 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 transition-all hover:shadow-sm">
-                            <div class="h-12 w-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shrink-0">
-                                <i data-lucide="alert-triangle" class="h-6 w-6"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] md:text-xs font-bold text-red-900 uppercase tracking-wider">Sudah Kedaluwarsa!</p>
-                                <p class="text-xs md:text-sm text-red-700 font-medium mt-0.5">5 Unit Pizza Mutiara (Batch #079)</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Inventory Container -->
                     <div class="space-y-6">
                         <!-- Tab Switcher -->
@@ -1215,8 +1192,8 @@
 
             <!-- Transaction Modal -->
             <div id="transaction-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-md">
-                <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200">
-                    <div class="flex justify-between items-start mb-6">
+                <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200 flex flex-col max-h-[90vh] md:max-h-[85vh]">
+                    <div class="flex justify-between items-start mb-6 shrink-0">
                         <div class="space-y-1">
                             <h3 id="modal-tx-title" class="font-bold text-xl tracking-tight">Catat Transaksi</h3>
                             <p class="text-xs text-slate-400">Pastikan data sesuai dengan struk/bukti fisik.</p>
@@ -1224,7 +1201,7 @@
                         <button onclick="closeTransactionModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="h-6 w-6"></i></button>
                     </div>
                     
-                    <div class="space-y-4">
+                    <div class="space-y-4 overflow-y-auto pr-2 flex-1 max-h-[50vh] md:max-h-[55vh] scrollbar-thin">
                         <input type="hidden" id="tx-type-hidden">
                         <!-- Tipe Transaksi Toggle -->
                         <div class="space-y-2">
@@ -1240,7 +1217,7 @@
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori</label>
-                            <select id="tx-category" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                            <select id="tx-category" onchange="window.handleTxCategoryChange()" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
                                 <optgroup label="Pemasukan" id="opt-income">
                                     <option value="Penjualan">Penjualan Produk</option>
                                     <option value="Lain-lain">Lain-lain / Pendapatan Lain</option>
@@ -1253,6 +1230,35 @@
                                 </optgroup>
                             </select>
                         </div>
+                        
+                        <!-- Product selection for Sales -->
+                        <div id="tx-product-section" class="hidden bg-slate-50 p-4 rounded-3xl border border-slate-100 space-y-3">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Pilih Produk Jadi</label>
+                                <select id="tx-product-select" onchange="window.handleTxProductChange()" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 text-slate-800">
+                                    <!-- Will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Jumlah Terjual (Qty)</label>
+                                <div class="relative">
+                                    <input type="number" id="tx-product-qty" oninput="window.handleTxProductChange()" value="1" min="1" class="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none text-slate-900 focus:border-emerald-500 pr-12">
+                                    <span id="tx-product-unit-label" class="absolute right-3.5 top-3 text-[10px] font-bold text-slate-400 uppercase">pcs</span>
+                                </div>
+                            </div>
+                            <!-- Stock status and Warning -->
+                            <div id="tx-stock-status-box" class="text-[11px] font-medium text-slate-500 flex flex-col gap-1 px-1">
+                                <div class="flex justify-between">
+                                    <span>Tersedia di Stok:</span>
+                                    <span id="tx-product-available-stock" class="font-bold text-slate-800">0 pcs</span>
+                                </div>
+                                <div id="tx-product-stock-warning" class="hidden text-rose-600 font-bold bg-rose-50 border border-rose-100 p-2.5 rounded-xl flex items-center gap-1.5 animate-pulse mt-1">
+                                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 shrink-0"></i>
+                                    <span>Stok tidak cukup!</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="space-y-2">
                             <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deskripsi Transaksi</label>
                             <input type="text" id="tx-desc" placeholder="Contoh: Penjualan Event, Beli Kemasan..." class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none">
@@ -1267,7 +1273,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 mt-8">
+                    <div class="grid grid-cols-1 gap-4 mt-8 shrink-0">
                         <button id="btn-save-tx" onclick="saveTransaction()" class="h-12 bg-primary text-white rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-lg shadow-primary/20">
                             Simpan Transaksi
                         </button>
@@ -2120,6 +2126,9 @@
                     title.innerText = 'Catat Pengeluaran';
                 }
             }
+            if (typeof window.handleTxCategoryChange === 'function') {
+                window.handleTxCategoryChange();
+            }
         }
         window.setModalTransactionType = setModalTransactionType;
 
@@ -2140,6 +2149,20 @@
             document.getElementById('tx-amount').value = '';
             editingTxId = null;
             document.getElementById('btn-save-tx').innerText = 'Simpan Transaksi';
+            
+            // Re-enable and reset product fields
+            const selectEl = document.getElementById('tx-product-select');
+            if (selectEl) selectEl.innerHTML = '';
+            const qtyInp = document.getElementById('tx-product-qty');
+            if (qtyInp) qtyInp.value = '1';
+            const warningEl = document.getElementById('tx-product-stock-warning');
+            if (warningEl) warningEl.classList.add('hidden');
+            const prdSection = document.getElementById('tx-product-section');
+            if (prdSection) prdSection.classList.add('hidden');
+            const descInput = document.getElementById('tx-desc');
+            const amountInput = document.getElementById('tx-amount');
+            if (descInput) descInput.readOnly = false;
+            if (amountInput) amountInput.readOnly = false;
         }
 
         // saveTransaction handles saving via Firestore now, implemented inside the module section below.
@@ -2426,6 +2449,103 @@
         // --- Transaction Actions ---
         let editingTxId = null;
 
+        window.populateTxProductSelect = () => {
+            const selectEl = document.getElementById('tx-product-select');
+            if (!selectEl) return;
+            selectEl.innerHTML = '';
+            
+            const products = Object.keys(productCatalogue).map(sku => ({
+                sku,
+                ...productCatalogue[sku]
+            }));
+
+            if (products.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.innerText = '-- Tidak Ada Produk Jadi --';
+                selectEl.appendChild(opt);
+                return;
+            }
+
+            products.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.sku;
+                opt.innerText = `${p.name} (Stok: ${p.stock})`;
+                selectEl.appendChild(opt);
+            });
+        };
+
+        window.handleTxCategoryChange = () => {
+            const categorySelect = document.getElementById('tx-category');
+            if (!categorySelect) return;
+            
+            const category = categorySelect.value;
+            const prdSection = document.getElementById('tx-product-section');
+            if (!prdSection) return;
+
+            if (category === 'Penjualan') {
+                prdSection.classList.remove('hidden');
+                window.populateTxProductSelect();
+                window.handleTxProductChange();
+            } else {
+                prdSection.classList.add('hidden');
+                const warningEl = document.getElementById('tx-product-stock-warning');
+                if (warningEl) warningEl.classList.add('hidden');
+                
+                // Allow manual overrides for standard non-sale categories
+                const descInput = document.getElementById('tx-desc');
+                const amountInput = document.getElementById('tx-amount');
+                if (descInput) descInput.readOnly = false;
+                if (amountInput) amountInput.readOnly = false;
+            }
+        };
+
+        window.handleTxProductChange = () => {
+            const selectEl = document.getElementById('tx-product-select');
+            const qtyInput = document.getElementById('tx-product-qty');
+            const descInput = document.getElementById('tx-desc');
+            const amountInput = document.getElementById('tx-amount');
+            const warningEl = document.getElementById('tx-product-stock-warning');
+            const stockTextEl = document.getElementById('tx-product-available-stock');
+
+            if (!selectEl || !qtyInput) return;
+
+            const selectedSku = selectEl.value;
+            const qty = parseInt(qtyInput.value) || 0;
+
+            if (!selectedSku || !productCatalogue[selectedSku]) {
+                if (stockTextEl) stockTextEl.innerText = '0 pcs';
+                if (warningEl) warningEl.classList.add('hidden');
+                return;
+            }
+
+            const product = productCatalogue[selectedSku];
+            const availableStock = product.stock || 0;
+            const price = product.price || 0;
+
+            if (stockTextEl) {
+                stockTextEl.innerText = `${availableStock} pcs`;
+            }
+
+            // Automate description and calculation for user's convenience
+            if (descInput) {
+                descInput.value = `Penjualan ${product.name} x${qty}`;
+            }
+            if (amountInput) {
+                amountInput.value = Math.max(0, Math.round(price * qty));
+            }
+
+            // Stock level warning trigger
+            if (qty > availableStock) {
+                if (warningEl) {
+                    warningEl.classList.remove('hidden');
+                    warningEl.querySelector('span').innerText = `Stok tidak cukup! Hanya tersedia ${availableStock} pcs.`;
+                }
+            } else {
+                if (warningEl) warningEl.classList.add('hidden');
+            }
+        };
+
         // deleteTransaction handles deletion via Firestore now, implemented inside the module section below.
 
         function editTransaction(id) {
@@ -2439,7 +2559,25 @@
             document.getElementById('tx-desc').value = tx.desc;
             document.getElementById('tx-amount').value = tx.amount;
             document.getElementById('tx-date').value = tx.date;
-            document.getElementById('tx-category').value = tx.category;
+            
+            const categorySelect = document.getElementById('tx-category');
+            if (categorySelect) {
+                categorySelect.value = tx.category;
+            }
+            
+            if (typeof window.handleTxCategoryChange === 'function') {
+                window.handleTxCategoryChange();
+                
+                // If this transactions has specific sold products & quantities saved
+                if (tx.category === 'Penjualan' && tx.productSku) {
+                    const selectEl = document.getElementById('tx-product-select');
+                    const qtyInp = document.getElementById('tx-product-qty');
+                    if (selectEl) selectEl.value = tx.productSku;
+                    if (qtyInp) qtyInp.value = tx.productQty || 1;
+                    
+                    window.handleTxProductChange();
+                }
+            }
             
             const btn = document.getElementById('btn-save-tx');
             btn.innerText = 'Update Transaksi';
@@ -3812,6 +3950,70 @@
             btn.innerText = 'Menyimpan...';
 
             try {
+                let finalProductSku = null;
+                let finalProductQty = null;
+
+                // Revert old stock if editing a previous Penjualan that had custom product fields
+                if (editingTxId) {
+                    const existingTx = cashTransactions.find(tx => tx.id === editingTxId);
+                    if (existingTx && existingTx.category === 'Penjualan' && existingTx.productSku && existingTx.productQty) {
+                        const oldSku = existingTx.productSku;
+                        const oldQty = parseInt(existingTx.productQty) || 0;
+                        const oldInvRef = doc(db, 'inventory', auth.currentUser.uid + '_' + oldSku);
+                        
+                        try {
+                            await runTransaction(db, async (tx) => {
+                                const snap = await tx.get(oldInvRef);
+                                if (snap.exists()) {
+                                    const currentStock = parseInt(snap.data().stock) || 0;
+                                    tx.update(oldInvRef, { stock: currentStock + oldQty });
+                                }
+                            });
+                        } catch (e) {
+                            console.warn("Gagal mengembalikan stok produk transaksi yang akan diedit:", e);
+                        }
+                    }
+                }
+
+                // If current category is Penjualan, perform stock validation and deduction
+                if (category === 'Penjualan') {
+                    const selectEl = document.getElementById('tx-product-select');
+                    const qtyInput = document.getElementById('tx-product-qty');
+                    if (!selectEl || !qtyInput) {
+                        throw new Error('Sistem error: Kolom pilihan produk atau kuantitas tidak ditemukan!');
+                    }
+                    const selectedSku = selectEl.value;
+                    const qty = parseInt(qtyInput.value) || 0;
+
+                    if (!selectedSku) {
+                        throw new Error('Silakan pilih produk jadi Terlebih dahulu!');
+                    }
+                    if (qty <= 0) {
+                        throw new Error('Jumlah produk terjual minimal 1!');
+                    }
+
+                    const invDocId = auth.currentUser.uid + '_' + selectedSku;
+                    const invRef = doc(db, 'inventory', invDocId);
+
+                    await runTransaction(db, async (tx) => {
+                        const invSnap = await tx.get(invRef);
+                        if (!invSnap.exists()) {
+                            throw new Error('Produk tidak ditemukan di database!');
+                        }
+                        const latestData = invSnap.data();
+                        const currentStock = parseInt(latestData.stock) || 0;
+                        if (currentStock < qty) {
+                            throw new Error(`Stok produk "${latestData.name}" tidak mencukupi! Tersedia: ${currentStock} pcs, Dibutuhkan: ${qty} pcs`);
+                        }
+                        tx.update(invRef, {
+                            stock: currentStock - qty
+                        });
+                    });
+
+                    finalProductSku = selectedSku;
+                    finalProductQty = qty;
+                }
+
                 if (editingTxId) {
                     const existingTx = cashTransactions.find(tx => tx.id === editingTxId);
                     const payload = {
@@ -3823,6 +4025,10 @@
                         date,
                         createdAt: existingTx ? existingTx.createdAt : new Date().toISOString()
                     };
+                    if (finalProductSku) {
+                        payload.productSku = finalProductSku;
+                        payload.productQty = finalProductQty;
+                    }
                     await setDoc(doc(db, 'transactions', editingTxId), payload);
                     editingTxId = null;
                 } else {
@@ -3835,12 +4041,17 @@
                         date,
                         createdAt: new Date().toISOString()
                     };
+                    if (finalProductSku) {
+                        payload.productSku = finalProductSku;
+                        payload.productQty = finalProductQty;
+                    }
                     await addDoc(collection(db, 'transactions'), payload);
                 }
                 closeTransactionModal();
                 alert('Transaksi berhasil disimpan!');
             } catch (error) {
-                handleFirestoreError(error, editingTxId ? OperationType.UPDATE : OperationType.CREATE, 'transactions');
+                alert('Gagal menyimpan transaksi: ' + (error instanceof Error ? error.message : String(error)));
+                console.error("Save transaction failure: ", error);
             } finally {
                 btn.disabled = false;
                 btn.innerText = originalText;
@@ -3896,6 +4107,28 @@
         window.deleteTransaction = async (id) => {
             if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
                 try {
+                    const tx = cashTransactions.find(t => t.id === id);
+                    if (tx && tx.category === 'Penjualan' && tx.productSku && tx.productQty) {
+                        const sku = tx.productSku;
+                        const qty = parseInt(tx.productQty) || 0;
+                        const invDocId = auth.currentUser.uid + '_' + sku;
+                        const invRef = doc(db, 'inventory', invDocId);
+
+                        try {
+                            await runTransaction(db, async (transaction) => {
+                                const snap = await transaction.get(invRef);
+                                if (snap.exists()) {
+                                    const currentStock = parseInt(snap.data().stock) || 0;
+                                    transaction.update(invRef, {
+                                        stock: currentStock + qty
+                                    });
+                                }
+                            });
+                        } catch (e) {
+                            console.warn("Gagal mengembalikan stok produk saat penghapusan transaksi:", e);
+                        }
+                    }
+
                     await deleteDoc(doc(db, 'transactions', id));
                     alert('Transaksi berhasil dihapus.');
                 } catch (error) {

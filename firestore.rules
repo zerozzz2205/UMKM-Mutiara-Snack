@@ -24,14 +24,16 @@ service cloud.firestore {
     // Transaction Validation
     function isValidTransaction(data) {
       return data.keys().hasAll(['userId', 'type', 'category', 'desc', 'amount', 'date', 'createdAt']) &&
-             data.keys().size() == 7 &&
+             data.keys().size() <= 9 &&
              data.userId == request.auth.uid &&
              data.type in ['income', 'expense'] &&
              data.category is string && data.category.size() <= 100 &&
              data.desc is string && data.desc.size() <= 500 &&
              data.amount is number && data.amount >= 0 &&
              data.date is string &&
-             data.createdAt is string;
+             data.createdAt is string &&
+             (!data.keys().hasAny(['productSku']) || data.productSku is string) &&
+             (!data.keys().hasAny(['productQty']) || data.productQty is number);
     }
 
     // Inventory Validation
@@ -98,7 +100,7 @@ service cloud.firestore {
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() && isValidTransaction(incoming());
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidTransaction(incoming()) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['category', 'desc', 'amount', 'date'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['category', 'desc', 'amount', 'date', 'productSku', 'productQty'])
       );
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
