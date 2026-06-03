@@ -184,7 +184,10 @@
                         </div>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Kata Sandi</label>
+                        <div class="flex justify-between items-center ml-1">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kata Sandi</label>
+                            <button id="btn-forgot-password" onclick="handleForgotPassword()" class="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider">Lupa Password?</button>
+                        </div>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                                 <i data-lucide="lock" class="h-4 w-4"></i>
@@ -1308,7 +1311,7 @@
             const toggleText = document.getElementById('toggle-auth-text');
             const errorDiv = document.getElementById('auth-error');
 
-            errorDiv.classList.add('hidden');
+            errorDiv.className = "hidden p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
 
             if (window.isRegisterMode) {
                 subtitle.innerText = "Daftar akun baru untuk mulai mengelola keuangan.";
@@ -1323,6 +1326,51 @@
             }
             lucide.createIcons();
         }
+
+        window.handleForgotPassword = async () => {
+            const email = document.getElementById('auth-email').value.trim();
+            const errorDiv = document.getElementById('auth-error');
+            const errorMsg = document.getElementById('auth-error-msg');
+            const loading = document.getElementById('login-loading');
+
+            if (!email) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.className = "p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
+                errorMsg.innerText = "Silakan masukkan email Anda di kolom email terlebih dahulu!";
+                return;
+            }
+
+            loading.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const { auth, sendPasswordResetEmail } = window.firebaseAuth;
+                if (!sendPasswordResetEmail) {
+                    throw new Error("Modul Firebase sendPasswordResetEmail belum siap.");
+                }
+                await sendPasswordResetEmail(auth, email);
+                
+                loading.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+                errorDiv.className = "p-3 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
+                errorMsg.innerHTML = "Link reset password berhasil dikirim, Bre! Silakan cek folder inbox atau spam email Anda.";
+            } catch (error) {
+                console.error("Forgot password error:", error);
+                loading.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+                errorDiv.className = "p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
+                
+                let message = "Gagal mengirim link reset password.";
+                if (error.code === 'auth/user-not-found') {
+                    message = "Email tidak terdaftar.";
+                } else if (error.code === 'auth/invalid-email') {
+                    message = "Format email tidak valid.";
+                } else {
+                    message = error.message || "Terjadi kesalahan.";
+                }
+                errorMsg.innerText = message;
+            }
+        };
 
         // Global sign-in trigger
         async function loginWithGoogle() {
@@ -3364,7 +3412,7 @@
     <!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -3383,7 +3431,7 @@
 
         // Share with global window so vanilla JS can use it
         window.firebaseDB = db;
-        window.firebaseAuth = { auth, signOut, signInWithPopup, signInWithRedirect, provider };
+        window.firebaseAuth = { auth, signOut, signInWithPopup, signInWithRedirect, provider, sendEmailVerification, sendPasswordResetEmail };
 
         const OperationType = {
             CREATE: 'create',
@@ -3584,12 +3632,14 @@
 
             if (!email || !password) {
                 errorDiv.classList.remove('hidden');
+                errorDiv.className = "p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
                 errorMsg.innerText = "Email dan password wajib diisi!";
                 return;
             }
 
             loading.classList.remove('hidden');
             errorDiv.classList.add('hidden');
+            errorDiv.className = "hidden p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
 
             try {
                 if (window.isRegisterMode) {
@@ -3604,13 +3654,30 @@
                             console.warn("Could not update auth profile displayName:", profileErr);
                         }
                     }
+                    // Trigger Skenario 1: sendEmailVerification
+                    await sendEmailVerification(userCredential.user);
                     await syncUserProfile(userCredential.user, name);
+                    
+                    // Immediately sign out to prevent automatic login of unverified account
+                    await signOut(auth);
+
+                    loading.classList.add('hidden');
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.className = "p-3 bg-emerald-50 text-emerald-600 border border-emerald-200 text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
+                    errorMsg.innerHTML = "Pendaftaran berhasil, Bre! Link verifikasi telah dikirim ke email lu. Silakan verifikasi email lu terlebih dahulu sebelum login.";
                 } else {
-                    await signInWithEmailAndPassword(auth, email, password);
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    
+                    // Trigger Skenario 2: Check emailVerified
+                    if (!userCredential.user.emailVerified) {
+                        await signOut(auth);
+                        throw { code: 'auth/unverified-email', message: "Email lu belum diverifikasi, Bre! Silakan verifikasi email lu terlebih dahulu lewat link yang dikirim." };
+                    }
                 }
             } catch (error) {
                 console.error("Auth error:", error);
                 errorDiv.classList.remove('hidden');
+                errorDiv.className = "p-3 bg-danger/10 text-danger text-[11px] font-bold rounded-xl flex items-center gap-2 mt-4";
                 let message = "Terjadi kesalahan.";
                 if (window.isRegisterMode) {
                     if (error.code === 'auth/email-already-in-use') {
@@ -3623,7 +3690,9 @@
                         message = error.message || "Gagal melakukan pendaftaran.";
                     }
                 } else {
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    if (error.code === 'auth/unverified-email') {
+                        message = error.message;
+                    } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                         message = "Email atau password salah.";
                     } else if (error.code === 'auth/invalid-email') {
                         message = "Format email tidak valid.";
