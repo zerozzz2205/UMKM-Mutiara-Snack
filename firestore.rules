@@ -18,7 +18,7 @@ service cloud.firestore {
              data.email is string &&
              data.displayName is string &&
              data.photoURL is string &&
-             data.createdAt is string; // Using string for date-time format in blueprint
+             data.createdAt is string;
     }
 
     // Transaction Validation
@@ -34,32 +34,44 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
-    // Inventory Validation
-    function isValidInventory(data) {
-      return data.keys().hasAll(['userId', 'name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price', 'createdAt']) &&
-             data.keys().size() == 8 &&
+    // Raw Materials Validation
+    function isValidRawMaterial(data) {
+      return data.keys().hasAll(['userId', 'name', 'quantity', 'unit', 'pricePerUnit', 'createdAt']) &&
+             data.keys().size() == 6 &&
              data.userId == request.auth.uid &&
              data.name is string && data.name.size() <= 200 &&
-             data.barcode is string && data.barcode.size() <= 100 &&
-             data.hpp is number && data.hpp >= 0 &&
-             data.stock is number && data.stock >= 0 &&
-             data.shelfLife is number && data.shelfLife >= 0 &&
-             data.price is number && data.price >= 0 &&
+             data.quantity is number && data.quantity >= 0 &&
+             data.unit is string && data.unit.size() <= 50 &&
+             data.pricePerUnit is number && data.pricePerUnit >= 0 &&
              data.createdAt is string;
     }
 
-    // Production Validation
-    function isValidProduction(data) {
-      return data.keys().hasAll(['userId', 'batchCode', 'sku', 'productName', 'qty', 'expiryDate', 'hpp', 'timestamp']) &&
+    // Products Validation
+    function isValidProduct(data) {
+      return data.keys().hasAll(['userId', 'name', 'quantity', 'hpp', 'price', 'barcode', 'shelfLife', 'createdAt']) &&
              data.keys().size() == 8 &&
              data.userId == request.auth.uid &&
-             data.batchCode is string && data.batchCode.size() <= 100 &&
-             data.sku is string && data.sku.size() <= 100 &&
+             data.name is string && data.name.size() <= 200 &&
+             data.quantity is number && data.quantity >= 0 &&
+             data.hpp is number && data.hpp >= 0 &&
+             data.price is number && data.price >= 0 &&
+             data.barcode is string && data.barcode.size() <= 100 &&
+             data.shelfLife is number && data.shelfLife >= 0 &&
+             data.createdAt is string;
+    }
+
+    // Production Record (Status Selesai) Validation
+    function isValidProductionRecord(data) {
+      return data.keys().hasAll(['userId', 'batchCode', 'productName', 'qty', 'hpp', 'status', 'timestamp', 'materialsUsed']) &&
+             data.keys().size() == 8 &&
+             data.userId == request.auth.uid &&
+             data.batchCode is string && data.batchCode.size() <= 150 &&
              data.productName is string && data.productName.size() <= 200 &&
              data.qty is number && data.qty >= 0 &&
-             data.expiryDate is string && data.expiryDate.size() <= 100 &&
              data.hpp is number && data.hpp >= 0 &&
-             data.timestamp is string;
+             data.status == "Selesai" &&
+             data.timestamp is string &&
+             data.materialsUsed is list;
     }
 
     // Default Deny
@@ -87,26 +99,31 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // Inventory Collection
-    match /inventory/{skuCode} {
+    // Raw Materials Collection
+    match /raw_materials/{materialId} {
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && isValidInventory(incoming()) && isValidId(skuCode);
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidInventory(incoming()) && isValidId(skuCode) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'barcode', 'hpp', 'stock', 'shelfLife', 'price'])
-      );
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(skuCode);
+      allow create: if isSignedIn() && isValidRawMaterial(incoming()) && isValidId(materialId);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidRawMaterial(incoming()) && isValidId(materialId);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(materialId);
     }
 
-    // Production Collection
-    match /production/{batchId} {
+    // Products Collection
+    match /products/{productId} {
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && isValidProduction(incoming()) && isValidId(batchId);
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidProduction(incoming()) && isValidId(batchId) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['qty', 'expiryDate', 'hpp'])
-      );
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(batchId);
+      allow create: if isSignedIn() && isValidProduct(incoming()) && isValidId(productId);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidProduct(incoming()) && isValidId(productId);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(productId);
+    }
+
+    // Productions Collection
+    match /productions/{productionId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidProductionRecord(incoming()) && isValidId(productionId);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidProductionRecord(incoming()) && isValidId(productionId);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(productionId);
     }
   }
 }

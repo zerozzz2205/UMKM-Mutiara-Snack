@@ -719,35 +719,13 @@
                 <div id="page-stok" class="page-content space-y-8 max-w-7xl mx-auto px-4 md:px-0">
                     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div class="flex flex-col gap-1">
-                            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Manajemen Stok & Branding</h1>
-                            <p class="text-sm md:text-base text-slate-500">Pantau inventaris dan kelola label identitas produk Anda.</p>
+                            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Manajemen Stok Bahan Baku</h1>
+                            <p class="text-sm md:text-base text-slate-500">Pantau ketersediaan bahan baku secara real-time untuk kelancaran produksi.</p>
                         </div>
                         <div class="w-full md:w-auto">
                             <button onclick="openInventoryModal()" class="w-full md:w-auto h-12 md:h-10 px-6 flex items-center justify-center gap-3 bg-primary text-white rounded-2xl md:rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95 no-print">
-                                <i data-lucide="plus" class="h-5 w-5 md:h-4 md:w-4"></i> Tambah Item
+                                <i data-lucide="plus" class="h-5 w-5 md:h-4 md:w-4"></i> Tambah Bahan Baku
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- Shelf-life Reminders -->
-                    <div id="expiry-reminder" class="flex flex-col md:grid md:grid-cols-2 gap-4">
-                        <div class="p-5 bg-orange-50 border border-orange-200 rounded-2xl flex items-center gap-4 transition-all hover:shadow-sm">
-                            <div class="h-12 w-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
-                                <i data-lucide="clock" class="h-6 w-6"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] md:text-xs font-bold text-orange-900 uppercase tracking-wider">Mendekati Expired (T-1 Hari)</p>
-                                <p class="text-xs md:text-sm text-orange-700 font-medium mt-0.5">3 Unit Kacang Telur Mutiara (Batch #082)</p>
-                            </div>
-                        </div>
-                        <div class="p-5 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 transition-all hover:shadow-sm">
-                            <div class="h-12 w-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shrink-0">
-                                <i data-lucide="alert-triangle" class="h-6 w-6"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] md:text-xs font-bold text-red-900 uppercase tracking-wider">Sudah Kedaluwarsa!</p>
-                                <p class="text-xs md:text-sm text-red-700 font-medium mt-0.5">5 Unit Pizza Mutiara (Batch #079)</p>
-                            </div>
                         </div>
                     </div>
 
@@ -763,12 +741,12 @@
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 border-b border-slate-100">
                                     <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                        <th class="px-6 py-4">Nama Barang & Barcode</th>
-                                        <th class="px-6 py-4">SKU</th>
-                                        <th class="px-6 py-4 text-center">Stok</th>
-                                        <th class="px-6 py-4">Expired Date</th>
-                                        <th class="px-6 py-4 text-right">HPP (Unit)</th>
-                                        <th class="px-6 py-4 text-right">Harga Jual</th>
+                                        <th class="px-6 py-4">Nama Bahan Baku</th>
+                                        <th class="px-6 py-4">Kode Bahan</th>
+                                        <th class="px-6 py-4 text-center">Jumlah Stok</th>
+                                        <th class="px-6 py-4">Satuan (Unit)</th>
+                                        <th class="px-6 py-4 text-right">Harga per Satuan</th>
+                                        <th class="px-6 py-4 text-right">Total Nilai</th>
                                         <th class="px-6 py-4"></th>
                                     </tr>
                                 </thead>
@@ -825,34 +803,69 @@
                     </div>
 
                     <div class="grid grid-cols-12 gap-8">
-                        <!-- Input Form -->
+                        <!-- Input Form (Overhauled for Auto-COGS and SKU Registration) -->
                         <div class="col-span-12 lg:col-span-5">
                             <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 sticky top-24">
                                 <h2 class="text-lg font-bold text-slate-900 mb-6">Mulai Produksi Batch</h2>
                                 
                                 <div class="space-y-6">
+                                    <!-- Mode SKU selector -->
                                     <div class="space-y-2">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih Mode SKU</label>
+                                        <div class="flex bg-slate-100 rounded-xl p-1 gap-1">
+                                            <button id="mode-sku-existing" onclick="setSkuMode('existing')" type="button" class="flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white text-primary shadow-sm transition-all focus:outline-none">Terdaftar</button>
+                                            <button id="mode-sku-new" onclick="setSkuMode('new')" type="button" class="flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg text-slate-500 hover:text-slate-700 transition-all focus:outline-none">SKU Baru</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Existing SKU selector -->
+                                    <div id="box-sku-existing" class="space-y-2">
                                         <div class="flex justify-between items-center">
-                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih Produk</label>
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sediakan Produk Jadi</label>
                                             <span id="batch-code-preview" class="text-[9px] font-mono font-bold text-primary bg-primary/5 px-2 py-0.5 rounded">AUTO-BATCH-GEN</span>
                                         </div>
-                                        <select id="prod-product-select" onchange="updateProductionCalc()" class="w-full px-4 h-12 bg-slate-50 border-none rounded-2xl text-sm font-semibold appearance-none">
+                                        <select id="prod-product-select" onchange="updateProductionCalc()" class="w-full px-4 h-12 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold appearance-none focus:outline-none">
                                             <option value="" disabled selected>Pilih Produk Jadi...</option>
-                                            <option value="SNK-001" data-hpp="8500" data-life="30">Kripik Singkong Madu (ED: 30 Hari)</option>
-                                            <option value="SNK-002" data-hpp="12000" data-life="14">Kacang Telur Mutiara (ED: 14 Hari)</option>
                                         </select>
+                                    </div>
+
+                                    <!-- New SKU registration input inside the form -->
+                                    <div id="box-sku-new" class="hidden space-y-4">
+                                        <div class="space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nama SKU Produk Baru</label>
+                                            <input type="text" id="new-prod-name" placeholder="Misal: Lanting Bumbu" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Shelf Life (Hari)</label>
+                                            <input type="number" id="new-prod-life" placeholder="30" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none">
+                                        </div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="space-y-2">
-                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah Produksi (Qty)</label>
-                                            <input type="number" id="prod-qty-input" oninput="updateProductionCalc()" placeholder="0" class="w-full px-4 h-12 bg-slate-50 border-none rounded-2xl font-bold text-primary">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah Hasil (Unit)</label>
+                                            <input type="number" id="prod-qty-input" oninput="updateProductionCalc()" placeholder="0" class="w-full px-4 h-12 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-primary focus:outline-none">
                                         </div>
                                         <div class="space-y-2">
                                             <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Estimasi Tgl Expired</label>
                                             <div id="ed-preview" class="w-full px-4 h-12 bg-slate-100 rounded-2xl flex items-center text-xs font-bold text-slate-500 uppercase tracking-widest">
                                                 -
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ingredients selection block -->
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Komponen Bahan Baku</label>
+                                            <button onclick="addIngredientRow()" type="button" class="text-[10px] font-bold text-primary px-3 py-1 bg-primary/5 hover:bg-primary/10 rounded-lg flex items-center gap-1 transition-colors">
+                                                <i data-lucide="plus" class="h-3.5 w-3.5"></i> Tambah Bahan
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Ingredients list wrapper -->
+                                        <div id="production-ingredients-container" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                                            <!-- Rows will be dynamically added here -->
                                         </div>
                                     </div>
 
@@ -863,7 +876,7 @@
                                             <span class="font-bold text-slate-900" id="prod-hpp-display">Rp0</span>
                                         </div>
                                         <div class="flex justify-between items-center">
-                                            <span class="text-sm font-bold text-slate-900">Total Nilai Produksi:</span>
+                                            <span class="text-sm font-bold text-slate-900">Total Biaya Bahan:</span>
                                             <span class="text-xl font-bold text-primary" id="prod-total-display">Rp0</span>
                                         </div>
                                     </div>
@@ -1158,39 +1171,45 @@
                 </div>
             </div>
 
-            <!-- Inventory Modal -->
+            <!-- Inventory Modal (Overhauled for Bahan Baku / Raw Materials) -->
             <div id="inventory-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-md">
                 <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200">
                     <div class="flex justify-between items-start mb-6">
                         <div class="space-y-1">
-                            <h3 id="modal-inv-title" class="font-bold text-xl tracking-tight text-slate-900">Tambah Item Stok</h3>
-                            <p class="text-xs text-slate-400">Kelola informasi produk dan stok inventaris UMKM.</p>
+                            <h3 id="modal-inv-title" class="font-bold text-xl tracking-tight text-slate-900">Tambah Bahan Baku</h3>
+                            <p class="text-xs text-slate-400">Kelola informasi bahan baku produksi UMKM.</p>
                         </div>
                         <button onclick="closeInventoryModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"><i data-lucide="x" class="h-6 w-6"></i></button>
                     </div>
                     
                     <div class="space-y-4">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Produk</label>
-                            <input type="text" id="inv-name" placeholder="Contoh: Kripik Singkong Madu" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Bahan Baku</label>
+                            <input type="text" id="inv-name" placeholder="Contoh: Singkong Mentah" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 transition-all outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">SKU (Kode)</label>
-                                <input type="text" id="inv-sku" placeholder="SNK-001" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-primary/20 outline-none">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">ID (Kode Bahan)</label>
+                                <input type="text" id="inv-sku" placeholder="MAT-001" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono font-bold focus:ring-2 focus:ring-primary/20 outline-none">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Barcode</label>
-                                <input type="text" id="inv-barcode" placeholder="899..." class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-primary/20 outline-none">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Satuan (Unit)</label>
+                                <select id="inv-unit" class="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none">
+                                    <option value="kg">kg (Kilogram)</option>
+                                    <option value="gr">gr (Gram)</option>
+                                    <option value="liter">liter (Liter)</option>
+                                    <option value="pcs">pcs (Pcs)</option>
+                                    <option value="ml">ml (Mililiter)</option>
+                                </select>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">HPP per Unit</label>
-                                <input type="number" id="inv-hpp" placeholder="0" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Harga per Satuan</label>
+                                <input type="number" id="inv-price" placeholder="Harga per unit" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Stok Awal</label>
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Stok Bahan Baku</label>
                                 <input type="number" id="inv-stock" placeholder="0" class="w-full h-12 px-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none">
                             </div>
                         </div>
@@ -1198,7 +1217,7 @@
 
                     <div class="grid grid-cols-1 gap-4 mt-8">
                         <button onclick="saveInventoryItem()" class="h-14 bg-primary text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 active:scale-95 group">
-                            <span id="btn-save-inv-text">Simpan Item Stok</span>
+                            <span id="btn-save-inv-text">Simpan Bahan Baku</span>
                             <i data-lucide="check-circle" class="h-4 w-4"></i>
                         </button>
                     </div>
@@ -1562,6 +1581,31 @@
         };
 
         let productCatalogue = JSON.parse(localStorage.getItem('productCatalogue')) || DEFAULT_CATALOGUE;
+        let rawMaterialsCatalogue = {};
+        let currentSkuMode = 'existing'; // 'existing' or 'new'
+
+        function setSkuMode(mode) {
+            currentSkuMode = mode;
+            const btnExisting = document.getElementById('mode-sku-existing');
+            const btnNew = document.getElementById('mode-sku-new');
+            const boxExisting = document.getElementById('box-sku-existing');
+            const boxNew = document.getElementById('box-sku-new');
+
+            if (mode === 'existing') {
+                if (btnExisting) btnExisting.className = "flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white text-primary shadow-sm transition-all focus:outline-none";
+                if (btnNew) btnNew.className = "flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg text-slate-500 hover:text-slate-700 transition-all focus:outline-none";
+                if (boxExisting) boxExisting.classList.remove('hidden');
+                if (boxNew) boxNew.classList.add('hidden');
+            } else {
+                if (btnNew) btnNew.className = "flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white text-primary shadow-sm transition-all focus:outline-none";
+                if (btnExisting) btnExisting.className = "flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg text-slate-500 hover:text-slate-700 transition-all focus:outline-none";
+                if (boxExisting) boxExisting.classList.add('hidden');
+                if (boxNew) boxNew.classList.remove('hidden');
+            }
+            updateProductionCalc();
+        }
+        window.setSkuMode = setSkuMode;
+
         let productionHistory = JSON.parse(localStorage.getItem('productionHistory')) || [];
         let editingInventorySku = null;
         let editingProductionIndex = null;
@@ -1763,98 +1807,126 @@
             toggleSKUManager();
         }
 
-        function updateProductionCalc() {
-            const select = document.getElementById('prod-product-select');
-            const qtyInput = document.getElementById('prod-qty-input');
-            const hppDisplay = document.getElementById('prod-hpp-display');
-            const totalDisplay = document.getElementById('prod-total-display');
-            const edPreview = document.getElementById('ed-preview');
+        // --- Overhauled Dynamic Production COGS calculations ---
+        function addIngredientRow(rawMatId = '', quantityUsed = '') {
+            const container = document.getElementById('production-ingredients-container');
+            if (!container) return;
 
-            if (!activeBatchCode) updateBatchCode();
+            const rowId = 'ing-row-' + Math.random().toString(36).substring(2, 9);
+            const rowDiv = document.createElement('div');
+            rowDiv.id = rowId;
+            rowDiv.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100';
 
-            const sku = select.value;
-            if (!sku) return;
+            // Create dropdown options of Raw Materials
+            let optionsHtml = '<option value="" disabled selected>Pilih Bahan...</option>';
+            Object.keys(rawMaterialsCatalogue).forEach(id => {
+                const rm = rawMaterialsCatalogue[id];
+                const sku = rm.sku || id.split('_')[1] || id;
+                const selectedAttr = (sku === rawMatId) ? 'selected' : '';
+                optionsHtml += `<option value="${sku}" data-unit="${rm.unit || 'kg'}" data-price="${rm.pricePerUnit || 0}" ${selectedAttr}>${rm.name} (${rm.quantity} ${rm.unit || 'kg'})</option>`;
+            });
 
-            const product = productCatalogue[sku];
-            const hpp = product.hpp || 0;
-            const life = product.shelfLife || 0;
-            const qty = parseInt(qtyInput.value) || 0;
+            rowDiv.innerHTML = `
+                <select class="ing-select flex-grow text-xs h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none" onchange="onIngredientChanged(this)">
+                    ${optionsHtml}
+                </select>
+                <div class="flex items-center gap-1 w-24">
+                    <input type="number" step="any" placeholder="Qty" value="${quantityUsed}" class="ing-qty text-xs h-10 w-16 px-2 text-center border border-slate-200 rounded-lg font-bold focus:outline-none" oninput="updateProductionCalc()">
+                    <span class="ing-unit text-[10px] font-bold text-slate-400 uppercase">-</span>
+                </div>
+                <button type="button" onclick="removeIngredientRow('${rowId}')" class="p-2 hover:bg-rose-50 rounded-lg text-rose-500 transition-colors">
+                    <i data-lucide="minus-circle" class="h-4 w-4"></i>
+                </button>
+            `;
 
-            const total = hpp * qty;
-            
-            hppDisplay.innerText = 'Rp' + parseInt(hpp).toLocaleString();
-            totalDisplay.innerText = 'Rp' + total.toLocaleString();
-
-            if (life > 0) {
-                const ed = new Date();
-                ed.setDate(ed.getDate() + parseInt(life));
-                const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                edPreview.innerText = ed.toLocaleDateString('id-ID', options);
-                edPreview.classList.add('text-primary');
-            } else {
-                edPreview.innerText = '-';
-            }
-        }
-
-        function submitProduction() {
-            const select = document.getElementById('prod-product-select');
-            const qtyInput = document.getElementById('prod-qty-input');
-            const edPreview = document.getElementById('ed-preview');
-            const btn = document.querySelector('button[onclick="submitProduction()"]');
-
-            if (!select.value || !qtyInput.value || parseInt(qtyInput.value) <= 0) {
-                alert('Pilih produk dan masukkan jumlah produksi yang valid!');
-                return;
-            }
-
-            const sku = select.value;
-            const product = productCatalogue[sku];
-            const qty = parseInt(qtyInput.value);
-            const batchCode = activeBatchCode;
-            const expiryDate = edPreview.innerText;
-
-            // Processing Indicator
-            const originalBtnContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Processing...`;
+            container.appendChild(rowDiv);
             lucide.createIcons();
 
-            setTimeout(() => {
-                // 1. Update State (Inventory Increase)
-                productCatalogue[sku].stock = (productCatalogue[sku].stock || 0) + qty;
+            // Trigger unit label update
+            const selectEl = rowDiv.querySelector('.ing-select');
+            if (selectEl) onIngredientChanged(selectEl);
+            updateProductionCalc();
+        }
+        window.addIngredientRow = addIngredientRow;
+
+        function removeIngredientRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+            }
+            updateProductionCalc();
+        }
+        window.removeIngredientRow = removeIngredientRow;
+
+        function onIngredientChanged(selectEl) {
+            const selectedOpt = selectEl.options[selectEl.selectedIndex];
+            const unitEl = selectEl.parentElement.querySelector('.ing-unit');
+            if (unitEl && selectedOpt) {
+                unitEl.innerText = selectedOpt.getAttribute('data-unit') || '-';
+            }
+            updateProductionCalc();
+        }
+        window.onIngredientChanged = onIngredientChanged;
+
+        function updateProductionCalc() {
+            let totalMaterialsCost = 0;
+            const container = document.getElementById('production-ingredients-container');
+            if (!container) return;
+
+            const rows = container.querySelectorAll('[id^="ing-row-"]');
+            rows.forEach(row => {
+                const selectEl = row.querySelector('.ing-select');
+                const qtyEl = row.querySelector('.ing-qty');
                 
-                // 2. Log History
-                productionHistory.unshift({
-                    batchCode,
-                    sku,
-                    productName: product.name,
-                    qty,
-                    expiryDate,
-                    timestamp: new Date().toISOString()
-                });
+                if (selectEl && selectEl.value && qtyEl && qtyEl.value) {
+                    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+                    const pricePerUnit = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+                    const qtyUsed = parseFloat(qtyEl.value) || 0;
+                    totalMaterialsCost += (qtyUsed * pricePerUnit);
+                }
+            });
 
-                // 3. Persist and Re-render (Ensures sync with Stok module)
-                saveState();
-                renderInitialData();
+            const qtyInput = document.getElementById('prod-qty-input');
+            const targetQty = qtyInput ? (parseFloat(qtyInput.value) || 0) : 0;
 
-                // 4. UI Transition
-                btn.innerHTML = `<i data-lucide="check-circle" class="h-4 w-4"></i> Stock Updated!`;
-                lucide.createIcons();
+            let hppPerUnit = 0;
+            if (targetQty > 0) {
+                hppPerUnit = totalMaterialsCost / targetQty;
+            }
 
-                // 5. Show Instant Label Popup
-                showLabelPreview(product.name, batchCode, expiryDate, product.barcode);
+            let shelfLife = 30;
+            if (currentSkuMode === 'existing') {
+                const select = document.getElementById('prod-product-select');
+                if (select && select.value) {
+                    const match = productCatalogue[select.value];
+                    if (match) shelfLife = match.shelfLife || 30;
+                }
+            } else {
+                const newLifeInput = document.getElementById('new-prod-life');
+                if (newLifeInput && newLifeInput.value) {
+                    shelfLife = parseInt(newLifeInput.value) || 30;
+                }
+            }
 
-                // 6. Reset UI
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnContent;
-                    lucide.createIcons();
-                }, 2000);
+            const now = new Date();
+            now.setDate(now.getDate() + shelfLife);
+            const edStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            
+            const edPreview = document.getElementById('ed-preview');
+            if (edPreview) {
+                edPreview.innerText = edStr;
+                edPreview.classList.add('text-primary');
+            }
 
-                qtyInput.value = '';
-                updateBatchCode();
-                updateProductionCalc();
-            }, 600);
+            const hppDisplay = document.getElementById('prod-hpp-display');
+            const totalDisplay = document.getElementById('prod-total-display');
+            if (hppDisplay) hppDisplay.innerText = 'Rp' + Math.round(hppPerUnit).toLocaleString('id-ID');
+            if (totalDisplay) totalDisplay.innerText = 'Rp' + Math.round(totalMaterialsCost).toLocaleString('id-ID');
+        }
+        window.updateProductionCalc = updateProductionCalc;
+
+        function submitProduction() {
+            // Overridden in script module
         }
 
         function showLabelPreview(name, batch, expiry, barcode) {
@@ -2104,7 +2176,7 @@
             const invEl = document.getElementById('stat-inventory-count');
             if (invEl) {
                 let totalStock = 0;
-                Object.values(productCatalogue).forEach(p => totalStock += (p.stock || 0));
+                Object.values(productCatalogue).forEach(p => totalStock += (p.quantity || 0));
                 invEl.innerText = totalStock.toLocaleString('id-ID') + ' Unit';
             }
         }
@@ -2967,27 +3039,29 @@
 
             document.getElementById('inventory-modal').classList.remove('hidden');
             
-            if (sku && productCatalogue[sku]) {
-                const p = productCatalogue[sku];
-                modalTitle.innerText = 'Edit Item Stok';
+            // Look up raw material by sku
+            const p = Object.values(rawMaterialsCatalogue).find(rm => rm.sku === sku);
+            
+            if (sku && p) {
+                modalTitle.innerText = 'Edit Bahan Baku';
                 submitBtnText.innerText = 'Simpan Perubahan';
                 skuInput.value = sku;
                 skuInput.disabled = true; // SKU usually shouldn't change
                 
                 document.getElementById('inv-name').value = p.name || '';
-                document.getElementById('inv-barcode').value = p.barcode || '';
-                document.getElementById('inv-hpp').value = p.hpp || '';
-                document.getElementById('inv-stock').value = p.stock || '';
+                document.getElementById('inv-unit').value = p.unit || 'kg';
+                document.getElementById('inv-price').value = p.pricePerUnit || '';
+                document.getElementById('inv-stock').value = p.quantity || '';
             } else {
-                modalTitle.innerText = 'Tambah Item Stok';
-                submitBtnText.innerText = 'Simpan Item Stok';
+                modalTitle.innerText = 'Tambah Bahan Baku';
+                submitBtnText.innerText = 'Simpan Bahan Baku';
                 skuInput.disabled = false;
                 // Reset fields
                 document.getElementById('inv-name').value = '';
                 document.getElementById('inv-sku').value = '';
-                document.getElementById('inv-barcode').value = '';
-                document.getElementById('inv-hpp').value = '';
-                document.getElementById('inv-stock').value = '';
+                document.getElementById('inv-unit').value = 'kg';
+                document.getElementById('inv-price').value = '';
+                document.getElementById('inv-stock').value = '0';
             }
         }
 
@@ -2997,41 +3071,11 @@
         }
 
         function saveInventoryItem() {
-            const name = document.getElementById('inv-name').value;
-            const skuInput = document.getElementById('inv-sku');
-            const sku = skuInput.value;
-            const barcode = document.getElementById('inv-barcode').value;
-            const hpp = parseInt(document.getElementById('inv-hpp').value) || 0;
-            const stock = parseInt(document.getElementById('inv-stock').value) || 0;
-
-            if (!name || !sku) {
-                alert('Nama Produk dan SKU wajib diisi!');
-                return;
-            }
-
-            // Update product catalogue
-            productCatalogue[sku] = {
-                ...(productCatalogue[sku] || {}),
-                name: name,
-                barcode: barcode,
-                hpp: hpp,
-                stock: stock,
-                shelfLife: productCatalogue[sku]?.shelfLife || 30, // Preserve shelfLife if editing
-                price: hpp * 1.5 // Default price logic
-            };
-
-            saveState();
-            renderInitialData(); // Re-render to show new items in tables
-            closeInventoryModal();
-            alert(editingInventorySku ? 'Data item berhasil diperbarui!' : 'Item stok berhasil ditambahkan!');
+            // Defined and overridden in firebase module below
         }
 
         function deleteInventoryItem(sku) {
-            if (confirm(`Apakah Anda yakin ingin menghapus "${productCatalogue[sku].name}"? Semua data stok akan hilang.`)) {
-                delete productCatalogue[sku];
-                saveState();
-                renderInitialData();
-            }
+            // Defined and overridden in firebase module below
         }
 
         // --- Production CRUD Functions ---
@@ -3461,7 +3505,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot, getDocFromServer, orderBy, limit, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBJUfN1CDHcfcn9_95AZ1fBuBa4BO6m8WQ",
@@ -3826,17 +3870,17 @@
             }
         };
 
-        // --- Firestore Backed Inventory Management ---
+        // --- Firestore Backed Inventory (Raw Materials) Management ---
         window.saveInventoryItem = async () => {
             const name = document.getElementById('inv-name').value;
             const skuInput = document.getElementById('inv-sku');
             const sku = skuInput.value;
-            const barcode = document.getElementById('inv-barcode').value;
-            const hpp = parseInt(document.getElementById('inv-hpp').value) || 0;
-            const stock = parseInt(document.getElementById('inv-stock').value) || 0;
+            const unit = document.getElementById('inv-unit').value || 'kg';
+            const pricePerUnit = parseInt(document.getElementById('inv-price').value) || 0;
+            const quantity = parseInt(document.getElementById('inv-stock').value) || 0;
 
             if (!name || !sku) {
-                alert('Nama Produk dan SKU wajib diisi!');
+                alert('Nama Bahan dan SKU wajib diisi!');
                 return;
             }
 
@@ -3848,22 +3892,22 @@
             }
 
             try {
+                const docId = auth.currentUser.uid + '_' + sku;
                 const payload = {
                     userId: auth.currentUser.uid,
                     name: name,
-                    barcode: barcode,
-                    hpp: hpp,
-                    stock: stock,
-                    shelfLife: productCatalogue[sku]?.shelfLife || 30,
-                    price: hpp * 1.5,
-                    createdAt: productCatalogue[sku]?.createdAt || new Date().toISOString()
+                    sku: sku,
+                    unit: unit,
+                    pricePerUnit: pricePerUnit,
+                    quantity: quantity,
+                    createdAt: rawMaterialsCatalogue[docId]?.createdAt || new Date().toISOString()
                 };
 
-                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), payload);
+                await setDoc(doc(db, 'raw_materials', docId), payload);
                 closeInventoryModal();
-                alert(editingInventorySku ? 'Data item berhasil diperbarui!' : 'Item stok berhasil ditambahkan!');
+                alert(editingInventorySku ? 'Data bahan baku berhasil diperbarui!' : 'Bahan baku berhasil ditambahkan!');
             } catch (error) {
-                handleFirestoreError(error, editingInventorySku ? OperationType.UPDATE : OperationType.CREATE, `inventory/${auth.currentUser.uid}_${sku}`);
+                handleFirestoreError(error, editingInventorySku ? OperationType.UPDATE : OperationType.CREATE, `raw_materials/${auth.currentUser.uid}_${sku}`);
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -3873,12 +3917,15 @@
         };
 
         window.deleteInventoryItem = async (sku) => {
-            if (confirm(`Apakah Anda yakin ingin menghapus "${productCatalogue[sku].name}"? Semua data stok akan hilang.`)) {
+            const docId = auth.currentUser.uid + '_' + sku;
+            const material = Object.values(rawMaterialsCatalogue).find(rm => rm.sku === sku);
+            if (!material) return;
+            if (confirm(`Apakah Anda yakin ingin menghapus "${material.name}"? Semua data bahan ini akan hilang.`)) {
                 try {
-                    await deleteDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku));
-                    alert('Item berhasil dihapus.');
+                    await deleteDoc(doc(db, 'raw_materials', docId));
+                    alert('Bahan baku berhasil dihapus dari stok.');
                 } catch (error) {
-                    handleFirestoreError(error, OperationType.DELETE, `inventory/${auth.currentUser.uid}_${sku}`);
+                    handleFirestoreError(error, OperationType.DELETE, `raw_materials/${docId}`);
                 }
             }
         };
@@ -3902,26 +3949,26 @@
             }
 
             try {
-                const skuCode = 'SKU-' + (Object.keys(productCatalogue).length + Math.floor(Math.random() * 900) + 101);
+                const skuCode = 'SKU-' + (Object.keys(productCatalogue).length + Math.floor(Math.random() * 90) + 10);
                 const payload = {
                     userId: auth.currentUser.uid,
                     name,
                     hpp,
                     shelfLife: life,
-                    stock: 0,
+                    quantity: 0,
                     barcode: '899' + Math.floor(Math.random() * 1000000000),
                     price: hpp * 1.5,
                     createdAt: new Date().toISOString()
                 };
 
-                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + skuCode), payload);
+                await setDoc(doc(db, 'products', auth.currentUser.uid + '_' + skuCode), payload);
                 alert(`Sukses! ${name} telah terdaftar.`);
                 document.getElementById('new-sku-name').value = '';
                 document.getElementById('new-sku-hpp').value = '';
                 document.getElementById('new-sku-life').value = '';
                 toggleSKUManager();
             } catch (error) {
-                handleFirestoreError(error, OperationType.CREATE, 'inventory');
+                handleFirestoreError(error, OperationType.CREATE, 'products');
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -3931,55 +3978,188 @@
             }
         };
 
-        // --- Firestore Backed Production Management ---
+        // --- Firestore Backed Production (Integrasi Otomatis Bahan + Auto COGS) ---
         window.submitProduction = async () => {
-            const select = document.getElementById('prod-product-select');
             const qtyInput = document.getElementById('prod-qty-input');
             const edPreview = document.getElementById('ed-preview');
             const btn = document.querySelector('button[onclick="submitProduction()"]');
 
-            if (!select.value || !qtyInput.value || parseInt(qtyInput.value) <= 0) {
-                alert('Pilih produk dan masukkan jumlah produksi yang valid!');
+            const targetQty = parseInt(qtyInput.value);
+            if (isNaN(targetQty) || targetQty <= 0) {
+                alert('Masukkan jumlah hasil produksi (Unit) yang valid!');
                 return;
             }
 
-            const sku = select.value;
-            const product = productCatalogue[sku];
-            if (!product) {
-                alert('Produk tidak ditemukan!');
+            // Gather ingredients to use
+            const container = document.getElementById('production-ingredients-container');
+            const rows = container ? container.querySelectorAll('[id^="ing-row-"]') : [];
+            const materialsList = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const selectEl = row.querySelector('.ing-select');
+                const qtyEl = row.querySelector('.ing-qty');
+                
+                if (selectEl && selectEl.value && qtyEl && qtyEl.value) {
+                    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+                    const sku = selectEl.value;
+                    const name = selectedOpt.text.split(' (')[0];
+                    const quantityUsed = parseFloat(qtyEl.value) || 0;
+                    const unit = selectedOpt.getAttribute('data-unit') || 'kg';
+                    const pricePerUnit = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+                    
+                    materialsList.push({
+                        sku,
+                        name,
+                        quantityUsed,
+                        unit,
+                        pricePerUnit
+                    });
+                }
+            }
+
+            if (materialsList.length === 0) {
+                alert('Tambahkan minimal satu bahan baku yang digunakan!');
                 return;
             }
-            const qty = parseInt(qtyInput.value);
-            const batchCode = activeBatchCode;
-            const expiryDate = edPreview.innerText;
 
+            // Check if existing mode or new SKU mode
+            let targetSku = '';
+            let targetProductName = '';
+            let targetShelfLife = 30;
+
+            if (currentSkuMode === 'existing') {
+                const select = document.getElementById('prod-product-select');
+                targetSku = select.value;
+                if (!targetSku) {
+                    alert('Pilih SKU Produk yang terdaftar terlebih dahulu!');
+                    return;
+                }
+                const matchPr = productCatalogue[targetSku];
+                if (!matchPr) {
+                    alert('SKU Produk tidak valid!');
+                    return;
+                }
+                targetProductName = matchPr.name;
+                targetShelfLife = matchPr.shelfLife || 30;
+            } else {
+                const newName = document.getElementById('new-prod-name').value;
+                const newLife = parseInt(document.getElementById('new-prod-life').value);
+                if (!newName || isNaN(newLife) || newLife <= 0) {
+                    alert('Input nama produk baru dan shelf life yang valid!');
+                    return;
+                }
+                targetProductName = newName;
+                targetShelfLife = newLife;
+                targetSku = 'SKU-' + (Object.keys(productCatalogue).length + Math.floor(Math.random() * 90) + 10);
+            }
+
+            // Calculate auto HPP/COGS
+            let totalMaterialsCost = 0;
+            materialsList.forEach(m => {
+                totalMaterialsCost += (m.quantityUsed * m.pricePerUnit);
+            });
+            const calculatedHpp = Math.round(totalMaterialsCost / targetQty);
+
+            // Button loading
             const originalBtnContent = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Processing...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Memproses Batch...`;
             lucide.createIcons();
 
             try {
-                await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
-                    stock: (product.stock || 0) + qty
-                }, { merge: true });
+                await runTransaction(db, async (transaction) => {
+                    const userId = auth.currentUser.uid;
+                    const productDocId = userId + '_' + targetSku;
+                    const productRef = doc(db, 'products', productDocId);
 
-                await addDoc(collection(db, 'production'), {
-                    userId: auth.currentUser.uid,
-                    batchCode,
-                    sku,
-                    productName: product.name,
-                    qty,
-                    expiryDate,
-                    hpp: product.hpp || 0,
-                    timestamp: new Date().toISOString()
+                    let currentProductStock = 0;
+                    let productHppValue = calculatedHpp;
+                    let existingBarcode = '899' + Math.floor(Math.random() * 1000000000);
+
+                    if (currentSkuMode === 'existing') {
+                        const prSnap = await transaction.get(productRef);
+                        if (prSnap.exists()) {
+                            const data = prSnap.data();
+                            currentProductStock = parseFloat(data.quantity) || 0;
+                            productHppValue = parseFloat(data.hpp) || calculatedHpp;
+                            existingBarcode = data.barcode || existingBarcode;
+                        }
+                    }
+
+                    // 1. Write product details/stock
+                    transaction.set(productRef, {
+                        userId: userId,
+                        name: targetProductName,
+                        hpp: Math.round(productHppValue),
+                        quantity: currentProductStock + targetQty,
+                        shelfLife: targetShelfLife,
+                        barcode: existingBarcode,
+                        price: Math.round(productHppValue * 1.5),
+                        createdAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    // 2. Reduce materials stock loop
+                    for (let x = 0; x < materialsList.length; x++) {
+                        const m = materialsList[x];
+                        const matDocId = userId + '_' + m.sku;
+                        const matRef = doc(db, 'raw_materials', matDocId);
+                        const matSnap = await transaction.get(matRef);
+                        
+                        let currentMatStock = 0;
+                        let matName = m.name;
+                        let matUnit = m.unit;
+                        let matPrice = m.pricePerUnit;
+
+                        if (matSnap.exists()) {
+                            const matData = matSnap.data();
+                            currentMatStock = parseFloat(matData.quantity) || 0;
+                            matName = matData.name || matName;
+                            matUnit = matData.unit || matUnit;
+                            matPrice = parseFloat(matData.pricePerUnit) || matPrice;
+                        }
+
+                        transaction.set(matRef, {
+                            quantity: Math.max(0, currentMatStock - m.quantityUsed)
+                        }, { merge: true });
+                    }
+
+                    // 3. Add batch log to productions
+                    const batchRef = doc(collection(db, 'productions'));
+                    transaction.set(batchRef, {
+                        userId: userId,
+                        batchCode: activeBatchCode,
+                        sku: targetSku,
+                        productName: targetProductName,
+                        qty: targetQty,
+                        hpp: calculatedHpp,
+                        materialsUsed: materialsList.map(m => ({
+                            name: m.name,
+                            quantityUsed: m.quantityUsed,
+                            unit: m.unit
+                        })),
+                        status: "Selesai",
+                        timestamp: new Date().toISOString()
+                    });
                 });
 
-                btn.innerHTML = `<i data-lucide="check-circle" class="h-4 w-4"></i> Stock Updated!`;
+                // Success
+                btn.innerHTML = `<i data-lucide="check-circle" class="h-4 w-4"></i> Batch Selesai!`;
                 lucide.createIcons();
 
-                showLabelPreview(product.name, batchCode, expiryDate, product.barcode);
+                showLabelPreview(targetProductName, activeBatchCode, edPreview.innerText, '899' + Math.floor(Math.random() * 1000000000));
 
                 qtyInput.value = '';
+                const nameInput = document.getElementById('new-prod-name');
+                if (nameInput) nameInput.value = '';
+                const lifeInput = document.getElementById('new-prod-life');
+                if (lifeInput) lifeInput.value = '';
+                
+                // Clear the ingredient rows
+                if (container) container.innerHTML = '';
+
+                // Reset mode back to existing default
+                setSkuMode('existing');
                 updateBatchCode();
                 updateProductionCalc();
 
@@ -3990,7 +4170,13 @@
                 }, 2000);
 
             } catch (error) {
-                handleFirestoreError(error, OperationType.WRITE, 'production');
+                console.error("submitProduction Transaction Error:", error);
+                alert("Terjadi kesalahan proses batch produksi: " + error.message);
+            } finally {
+                if (!btn.disabled) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnContent;
+                }
             }
         };
 
@@ -4018,8 +4204,7 @@
             if (!batch) return;
 
             const oldQty = batch.qty;
-            const sku = batch.sku;
-            const product = productCatalogue[sku];
+            const diff = newQty - oldQty;
 
             const btn = document.querySelector('button[onclick="saveProductionEdit()"]');
             const originalText = btn ? btn.innerText : 'Simpan';
@@ -4029,20 +4214,33 @@
             }
 
             try {
-                if (product) {
-                    await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
-                        stock: Math.max(0, (product.stock || 0) - oldQty + newQty)
-                    }, { merge: true });
-                }
+                await runTransaction(db, async (transaction) => {
+                    const batchRef = doc(db, 'productions', batch.id);
 
-                await setDoc(doc(db, 'production', batch.id), {
-                    qty: newQty
-                }, { merge: true });
+                    // Find matching product
+                    const matchQuery = query(collection(db, 'products'), where('userId', '==', auth.currentUser.uid), where('name', '==', batch.productName));
+                    const matchSnap = await getDocs(matchQuery);
+                    
+                    if (!matchSnap.empty) {
+                        const prodDoc = matchSnap.docs[0];
+                        const prodRef = doc(db, 'products', prodDoc.id);
+                        const prodData = prodDoc.data();
+                        const currentProdStock = parseFloat(prodData.quantity) || 0;
+                        transaction.update(prodRef, {
+                            quantity: Math.max(0, currentProdStock + diff)
+                        });
+                    }
+
+                    // Update the batch qty
+                    transaction.update(batchRef, {
+                        qty: newQty
+                    });
+                });
 
                 closeProductionModal();
                 alert('Batch produksi berhasil diperbarui!');
             } catch (error) {
-                handleFirestoreError(error, OperationType.UPDATE, `production/${batch.id}`);
+                handleFirestoreError(error, OperationType.UPDATE, `productions/${batch.id}`);
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -4056,19 +4254,31 @@
             if (!batch) return;
 
             if (confirm(`Hapus riwayat produksi batch ${batch.batchCode}? Perhatian: Stok produk akan dikurangi sesuai jumlah batch ini.`)) {
-                const sku = batch.sku;
-                const product = productCatalogue[sku];
                 try {
-                    if (product) {
-                        await setDoc(doc(db, 'inventory', auth.currentUser.uid + '_' + sku), {
-                            stock: Math.max(0, (product.stock || 0) - batch.qty)
-                        }, { merge: true });
-                    }
+                    await runTransaction(db, async (transaction) => {
+                        const batchRef = doc(db, 'productions', batch.id);
 
-                    await deleteDoc(doc(db, 'production', batch.id));
+                        // Find matching product
+                        const matchQuery = query(collection(db, 'products'), where('userId', '==', auth.currentUser.uid), where('name', '==', batch.productName));
+                        const matchSnap = await getDocs(matchQuery);
+                        
+                        if (!matchSnap.empty) {
+                            const prodDoc = matchSnap.docs[0];
+                            const prodRef = doc(db, 'products', prodDoc.id);
+                            const prodData = prodDoc.data();
+                            const currentProdStock = parseFloat(prodData.quantity) || 0;
+                            transaction.update(prodRef, {
+                                quantity: Math.max(0, currentProdStock - batch.qty)
+                            });
+                        }
+
+                        // Delete the batch
+                        transaction.delete(batchRef);
+                    });
+
                     alert('Batch produksi berhasil dihapus.');
                 } catch (error) {
-                    handleFirestoreError(error, OperationType.DELETE, `production/${batch.id}`);
+                    handleFirestoreError(error, OperationType.DELETE, `productions/${batch.id}`);
                 }
             }
         };
@@ -4077,7 +4287,7 @@
             const batch = productionHistory.find(b => b.batchCode === batchCode);
             if (batch) {
                 const product = productCatalogue[batch.sku] || Object.values(productCatalogue).find(p => p.name === batch.productName);
-                showLabelPreview(batch.productName, batch.batchCode, batch.expiryDate, product ? product.barcode : null);
+                showLabelPreview(batch.productName, batch.batchCode, batch.expiryDate || '-', product ? product.barcode : null);
             }
         };
 
@@ -4122,22 +4332,48 @@
                     handleFirestoreError(error, OperationType.LIST, pathForOnSnapshot);
                 });
 
-                // Register real-time Snapshot of inventory (Purely Read-only!)
-                const pathForInventory = 'inventory';
-                const qInv = query(collection(db, pathForInventory), where('userId', '==', user.uid));
+                // Register real-time Snapshot of raw_materials
+                const pathForRawMaterials = 'raw_materials';
+                const qRawInv = query(collection(db, pathForRawMaterials), where('userId', '==', user.uid));
                 if (unsubscribeInventory) unsubscribeInventory();
-                unsubscribeInventory = onSnapshot(qInv, (snapshot) => {
+                unsubscribeInventory = onSnapshot(qRawInv, (snapshot) => {
                     const tempCatalogue = {};
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const docId = doc.id;
-                        // Strip userId prefix from the document ID to reconstruct the clean SKU code
+                        const sku = data.sku || docId.replace(user.uid + '_', '');
+                        tempCatalogue[docId] = {
+                            id: docId,
+                            sku: sku,
+                            name: data.name,
+                            quantity: parseFloat(data.quantity) || 0,
+                            unit: data.unit || 'kg',
+                            pricePerUnit: parseFloat(data.pricePerUnit) || 0,
+                            createdAt: data.createdAt
+                        };
+                    });
+                    rawMaterialsCatalogue = tempCatalogue;
+                    renderInitialData();
+                    updateProductionCalc();
+                }, (error) => {
+                    handleFirestoreError(error, OperationType.LIST, pathForRawMaterials);
+                });
+
+                // Register real-time Snapshot of products
+                const pathForProducts = 'products';
+                const qProdCatalog = query(collection(db, pathForProducts), where('userId', '==', user.uid));
+                if (unsubscribeLatestProduction) unsubscribeLatestProduction();
+                unsubscribeLatestProduction = onSnapshot(qProdCatalog, (snapshot) => {
+                    const tempCatalogue = {};
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const docId = doc.id;
                         const sku = docId.replace(user.uid + '_', '');
                         tempCatalogue[sku] = {
                             name: data.name,
                             barcode: data.barcode,
                             hpp: parseInt(data.hpp) || 0,
-                            stock: parseInt(data.stock) || 0,
+                            quantity: parseInt(data.quantity) || 0,
                             shelfLife: parseInt(data.shelfLife) || 30,
                             price: parseFloat(data.price) || (parseInt(data.hpp) || 0) * 1.5,
                             createdAt: data.createdAt
@@ -4146,33 +4382,55 @@
                     productCatalogue = tempCatalogue;
                     renderInitialData();
                 }, (error) => {
-                    handleFirestoreError(error, OperationType.LIST, pathForInventory);
+                    handleFirestoreError(error, OperationType.LIST, pathForProducts);
                 });
 
-                // Check and trigger a one-off database seed if catalog is empty (Safe, Single One-Time Check!)
+                // One-time safe seed if database collections are empty
                 try {
-                    const snapshotOnce = await getDocs(qInv);
-                    if (snapshotOnce.empty) {
+                    const snapshotRawOnce = await getDocs(qRawInv);
+                    if (snapshotRawOnce.empty) {
+                        const DEFAULT_RAW_MATERIALS = {
+                            'rm_singkong': { name: 'Singkong Mentah', quantity: 250, unit: 'kg', pricePerUnit: 2500 },
+                            'rm_minyak': { name: 'Minyak Goreng', quantity: 50, unit: 'liter', pricePerUnit: 15000 },
+                            'rm_bumbu': { name: 'Bumbu Rempah', quantity: 100, unit: 'gr', pricePerUnit: 400 },
+                            'rm_plastik': { name: 'Plastik Kemasan', quantity: 500, unit: 'pcs', pricePerUnit: 200 }
+                        };
+                        for (const sku of Object.keys(DEFAULT_RAW_MATERIALS)) {
+                            const defItem = DEFAULT_RAW_MATERIALS[sku];
+                            await setDoc(doc(db, 'raw_materials', user.uid + '_' + sku), {
+                                userId: user.uid,
+                                sku: sku,
+                                name: defItem.name,
+                                quantity: defItem.quantity,
+                                unit: defItem.unit,
+                                pricePerUnit: defItem.pricePerUnit,
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    }
+
+                    const snapshotProdOnce = await getDocs(qProdCatalog);
+                    if (snapshotProdOnce.empty) {
                         for (const sku of Object.keys(DEFAULT_CATALOGUE)) {
                             const defItem = DEFAULT_CATALOGUE[sku];
-                            await setDoc(doc(db, 'inventory', user.uid + '_' + sku), {
+                            await setDoc(doc(db, 'products', user.uid + '_' + sku), {
                                 userId: user.uid,
                                 name: defItem.name,
-                                barcode: defItem.barcode || '',
                                 hpp: defItem.hpp || 0,
-                                stock: defItem.stock || 0,
+                                quantity: defItem.stock || 0,
                                 shelfLife: defItem.shelfLife || 30,
+                                barcode: defItem.barcode || '',
                                 price: defItem.price || (defItem.hpp || 0) * 1.5,
                                 createdAt: new Date().toISOString()
                             });
                         }
                     }
                 } catch (e) {
-                    console.error("One-time default catalog seeding error:", e);
+                    console.error("One-time database collections seeding error:", e);
                 }
 
-                // Register real-time Snapshot of production
-                const pathForProduction = 'production';
+                // Register real-time Snapshot of production batches log
+                const pathForProduction = 'productions';
                 const qProd = query(collection(db, pathForProduction), where('userId', '==', user.uid));
                 if (unsubscribeProduction) unsubscribeProduction();
                 unsubscribeProduction = onSnapshot(qProd, (snapshot) => {
