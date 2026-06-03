@@ -28,51 +28,51 @@
       },
       "required": ["userId", "type", "category", "desc", "amount", "date"]
     },
-    "RawMaterial": {
-      "title": "Raw Material Item",
-      "description": "A raw material ingredient used for production",
+    "Inventory": {
+      "title": "Inventory Item",
+      "description": "An inventory product catalog item",
       "type": "object",
       "properties": {
         "userId": { "type": "string", "description": "UID of the owner" },
         "name": { "type": "string" },
-        "quantity": { "type": "number" },
-        "unit": { "type": "string" },
-        "pricePerUnit": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "name", "quantity", "unit", "pricePerUnit", "createdAt"]
-    },
-    "Product": {
-      "title": "Product Item or SKU",
-      "description": "A finished product ready for sale",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string", "description": "UID of the owner" },
-        "name": { "type": "string" },
-        "quantity": { "type": "number" },
-        "hpp": { "type": "number" },
-        "price": { "type": "number" },
         "barcode": { "type": "string" },
+        "hpp": { "type": "number" },
+        "stock": { "type": "number" },
         "shelfLife": { "type": "number" },
+        "price": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "name", "quantity", "hpp", "price", "barcode", "shelfLife", "createdAt"]
+      "required": ["userId", "name", "hpp", "stock", "shelfLife", "price"]
     },
-    "ProductionRecord": {
-      "title": "Production Record Log",
-      "description": "A historical log of production batch runs",
+    "Production": {
+      "title": "Production Batch",
+      "description": "A production history batch log",
       "type": "object",
       "properties": {
         "userId": { "type": "string", "description": "UID of the owner" },
         "batchCode": { "type": "string" },
+        "sku": { "type": "string" },
         "productName": { "type": "string" },
         "qty": { "type": "number" },
+        "expiryDate": { "type": "string" },
         "hpp": { "type": "number" },
-        "status": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "materialsUsed": { "type": "array" }
+        "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "batchCode", "productName", "qty", "hpp", "status", "timestamp", "materialsUsed"]
+      "required": ["userId", "batchCode", "sku", "productName", "qty", "expiryDate", "hpp", "timestamp"]
+    },
+    "RawMaterial": {
+      "title": "Raw Material",
+      "description": "Stock of raw materials used in production",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the owner" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string", "enum": ["kg", "gram", "pcs", "liter", "pack"] },
+        "pricePerUnit": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "quantity", "unit", "pricePerUnit", "createdAt"]
     }
   },
   "firestore": {
@@ -84,17 +84,17 @@
       "schema": "Transaction",
       "description": "Global transactions (filtered by userId)"
     },
-    "raw_materials/{materialId}": {
+    "inventory/{skuCode}": {
+      "schema": "Inventory",
+      "description": "Product catalog and stock quantities"
+    },
+    "production/{batchId}": {
+      "schema": "Production",
+      "description": "History of production batches"
+    },
+    "raw_materials/{matId}": {
       "schema": "RawMaterial",
-      "description": "Ingredients and materials used in production"
-    },
-    "products/{productId}": {
-      "schema": "Product",
-      "description": "Product catalog and finished items stocks"
-    },
-    "productions/{productionId}": {
-      "schema": "ProductionRecord",
-      "description": "Historical log of finished production runs"
+      "description": "UMKM raw material stocks"
     }
   }
 }
