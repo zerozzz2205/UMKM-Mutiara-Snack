@@ -352,7 +352,7 @@
             </header>
 
             <!-- Page Sections -->
-            <main class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#f8fafc]">
                 
                 <!-- Page: Dashboard -->
                 <div id="page-dashboard" class="page-content active-page space-y-8 max-w-7xl mx-auto px-4 md:px-0">
@@ -419,7 +419,7 @@
                                     <button onclick="toggleDashboardTimeframe('bulanan')" id="btn-dash-bulanan" class="flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Bulanan</button>
                                 </div>
                             </div>
-                            <div class="h-[280px] md:h-[350px] w-full">
+                            <div class="h-[280px] md:h-[350px] w-full relative">
                                 <canvas id="cashflowChart"></canvas>
                             </div>
                         </div>
@@ -546,7 +546,7 @@
                         <!-- Content Area -->
                         <div class="col-span-12 flex flex-col gap-6">
                             <!-- Mobile Card List (Hidden on Desktop) -->
-                            <div id="cash-card-list" class="md:hidden flex flex-col items-center w-full space-y-4">
+                            <div id="cash-card-list" class="md:hidden flex flex-col w-full gap-4">
                                 <!-- Cards will be injected via JS -->
                             </div>
 
@@ -799,12 +799,12 @@
 
                 <!-- Page: Produksi -->
                 <div id="page-produksi" class="page-content space-y-8 max-w-7xl mx-auto">
-                    <div class="flex justify-between items-end">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 md:gap-0">
                         <div class="flex flex-col gap-1">
                             <h1 class="text-3xl font-bold tracking-tight text-slate-900">Advanced Production Module</h1>
                             <p class="text-slate-500">Tracking HPP tepat dan estimasi ED (Expiry Date) otomatis per batch.</p>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 self-start md:self-auto">
                             <button onclick="toggleSKUManager()" class="h-10 px-4 flex items-center gap-2 border border-slate-200 bg-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50">
                                 <i data-lucide="package-plus" class="h-4 w-4"></i> Register SKU Baru
                             </button>
@@ -1399,10 +1399,7 @@
                 </div>
             </div>
 
-            <footer class="h-12 flex items-center justify-between px-8 bg-white border-t text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                <span>FinUMKM v1.0.0</span>
-                <span>Terakhir diperbarui: 2 menit yang lalu oleh Kadek</span>
-            </footer>
+
         </div>
     </div>
 
@@ -3078,8 +3075,8 @@
                                  else dayExp += tx.amount || 0;
                              }
                          });
-                         incomeData.push(dayInc / 1000000); // Scale to Juta
-                         expenseData.push(dayExp / 1000000);
+                         incomeData.push(dayInc);
+                         expenseData.push(dayExp);
                      }
                  } else {
                      // Monthly View - dynamic based on actual months up to the current month in live Firestore db
@@ -3116,8 +3113,8 @@
                              }
                          });
                          
-                         incomeData.push(monthInc / 1000000); // Scale to Juta
-                         expenseData.push(monthExp / 1000000);
+                         incomeData.push(monthInc);
+                         expenseData.push(monthExp);
                     }
                 }
 
@@ -3154,17 +3151,39 @@
                         },
                         options: {
                             responsive: true,
-                            plugins: { legend: { display: false } },
+                            maintainAspectRatio: false,
+                            plugins: { 
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.dataset.label || '';
+                                            const val = context.raw || 0;
+                                            return `${label}: Rp ${val.toLocaleString('id-ID')}`;
+                                        }
+                                    }
+                                }
+                            },
                             scales: {
                                 y: { 
                                     beginAtZero: true, 
                                     grid: { color: '#f1f5f9' },
                                     ticks: {
-                                        callback: function(value) { return 'Rp' + value + 'jt'; }
+                                        callback: function(value) {
+                                            if (value === 0) return 'Rp 0';
+                                            if (value >= 1000000) {
+                                                const formatted = (value / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 });
+                                                return 'Rp ' + formatted + ' Jt';
+                                            } else if (value >= 1000) {
+                                                const formatted = (value / 1000).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+                                                return 'Rp ' + formatted + ' Rb';
+                                            }
+                                            return 'Rp ' + value;
+                                        }
                                     }
                                 },
                                 x: { grid: { display: false } }
-                            }
+                             }
                         }
                     });
                 }
