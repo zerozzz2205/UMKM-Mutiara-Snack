@@ -4497,16 +4497,38 @@
         };
 
         window.deleteInventoryItem = async (id) => {
+            // 1. Check if the ID matches a raw material
             const mat = (window.rawMaterialsList || []).find(m => m.id === id);
-            const name = mat ? mat.name : 'bahan baku ini';
-            if (confirm(`Apakah Anda yakin ingin menghapus "${name}"? Semua data stok bahan baku ini akan hilang.`)) {
-                try {
-                    await deleteDoc(doc(db, 'raw_materials', id));
-                    alert('Bahan baku mentah berhasil dihapus.');
-                } catch (error) {
-                    handleFirestoreError(error, OperationType.DELETE, `raw_materials/${id}`);
+            if (mat) {
+                const name = mat.name;
+                if (confirm(`Apakah Anda yakin ingin menghapus "${name}"? Semua data stok bahan baku ini akan hilang.`)) {
+                    try {
+                        await deleteDoc(doc(db, 'raw_materials', id));
+                        alert('Bahan baku mentah berhasil dihapus.');
+                    } catch (error) {
+                        handleFirestoreError(error, OperationType.DELETE, `raw_materials/${id}`);
+                    }
                 }
+                return;
             }
+
+            // 2. Check if the ID matches a finished product (SKU) in productCatalogue
+            if (productCatalogue && productCatalogue[id]) {
+                const prod = productCatalogue[id];
+                if (confirm(`Apakah Anda yakin ingin menghapus produk jadi "${prod.name}" (${id})? Semua data stok produk ini akan hilang.`)) {
+                    try {
+                        const invDocId = auth.currentUser.uid + '_' + id;
+                        await deleteDoc(doc(db, 'inventory', invDocId));
+                        alert(`Produk jadi "${prod.name}" berhasil dihapus.`);
+                    } catch (error) {
+                        handleFirestoreError(error, OperationType.DELETE, `inventory/${id}`);
+                    }
+                }
+                return;
+            }
+
+            // Fallback
+            alert('Item tidak ditemukan atau tidak dapat dihapus!');
         };
 
         window.registerNewSKU = async () => {
